@@ -4,28 +4,30 @@
 #include <conio.h>
 #include "../main.h"
 
-#define IDS_LENGTH 16
+#define IDS_LENGTH 32
 #define SHORT_DESC_LENGTH 128
 #define DESC_LENGTH 1024
-#define DATE_LENGTH 100
+#define DATE_LENGTH 128
 #define WRITER_LENGTH 16
 #define STATUS_LENGTH 8
-#define MAX_RECORD_LEN 1300
+#define MAX_RECORD_LEN 2048
 #define DATABASE_FILE "DB.csv"
+
+static int totalLen = 0;
 
 typedef struct // WE DEFINE TYPE OF TYPE STRUCTURE
 {
-    char uniqueID[IDS_LENGTH];             //     1. UNIQUE ID NUMBER
-    char sShortDesc[SHORT_DESC_LENGTH];    //     2. SHORT DESCRIPTION
-    char sDesc[DESC_LENGTH];               //     3. DESCRIPTION
-    char sDateOfCreation[DATE_LENGTH];     //     4. DATE OF CREATION(current date)
-    char sDateOfFixed[DATE_LENGTH];        //     5. DATE OF FIXED = 0 HERE
-    char sDateOfClosed[DATE_LENGTH];       //     6. DATE OF CLOSED = 0 HERE
-    char lastWriteInReport[WRITER_LENGTH]; //     7. LAST WRITER IN REPORT : TESTER OR PROGRAMMER
-    char statusOfReport[STATUS_LENGTH];    //     8. STATUS : NEW | FIXED | CLOSED
-} bugReport; // AND GIVE NAME HIM BUG REPORT
+    char *uniqueID;          //     1. UNIQUE ID NUMBER
+    char *sShortDesc;        //     2. SHORT DESCRIPTION
+    char *sDesc;             //     3. DESCRIPTION
+    char *sDateOfCreation;   //     4. DATE OF CREATION(current date)
+    char *sDateOfFixed;      //     5. DATE OF FIXED = 0 HERE
+    char *sDateOfClosed;     //     6. DATE OF CLOSED = 0 HERE
+    char *lastWriteInReport; //     7. LAST WRITER IN REPORT : TESTER OR PROGRAMMER
+    char *statusOfReport;    //     8. STATUS : NEW | FIXED | CLOSED
+} bugReport;                 // AND GIVE NAME HIM BUG REPORT
 
-char *serialize(const bugReport *p); //WE USE CONST FOR NOT CHANGE CHARS IN ARRAYS
+char *serialize(const bugReport *p); // WE USE CONST FOR NOT CHANGE CHARS IN ARRAYS
 
 bugReport newReport;
 
@@ -49,7 +51,8 @@ void printAllReports()
     int flag = 0;
     for (int i = 0; i < len - 2; i++)
     {
-        if(dynArr[i] == '"') {
+        if (dynArr[i] == '"')
+        {
             flag = (flag == 0);
         }
         else if (dynArr[i - 1] == '\n' && dynArr[i + 1] == ',')
@@ -85,7 +88,18 @@ void createNewReport()
     printf(" -- Enter short description at single line (MAX 128 chars) ");
     printNewLines(2);
 
+    totalLen = 0;
+
     makePause();
+    newReport.uniqueID = (char *)malloc(IDS_LENGTH);
+    newReport.sShortDesc = malloc(SHORT_DESC_LENGTH);
+    newReport.sDesc = (char *)malloc(DESC_LENGTH);
+    newReport.sDateOfCreation = (char *)malloc(DATE_LENGTH);
+    newReport.sDateOfFixed = (char *)malloc(DATE_LENGTH);
+    newReport.sDateOfClosed = (char *)malloc(DATE_LENGTH);
+    newReport.lastWriteInReport = (char *)malloc(WRITER_LENGTH);
+    newReport.statusOfReport = (char *)malloc(STATUS_LENGTH);
+
     getShortDesc(newReport.sShortDesc);
     fflush(stdin);
 
@@ -97,19 +111,30 @@ void createNewReport()
     printf(" Your DESC: %s", newReport.sDesc);
     char buffer[IDS_LENGTH];
     strcpy(newReport.uniqueID, itoa(countFileRows(DATABASE_FILE) + 1, buffer, 10));
+
     // printf(" \n UNIQUE ID = %d \n", newReport.uniqueID);
     strcpy(newReport.sDateOfCreation, "date");
     strcpy(newReport.sDateOfFixed, "date");
     strcpy(newReport.sDateOfClosed, "date");
     strcpy(newReport.lastWriteInReport, "Tester");
     strcpy(newReport.statusOfReport, "NEW");
+    printf("%d", totalLen);
+
     fp = fopen(DATABASE_FILE, "a+"); // OPEN DATABASE FOR WRITING
                                      // fwrite(&newReport, sizeof(char), sizeof(newReport), fp);
                                      // fwrite(&newReport, sizeof(struct bugReport), sizeof(char), fp);
     char *sdata = serialize(&newReport);
     fprintf(fp, "%s\n", sdata);
 
-    //fputc('\n', fp);
+    // fputc('\n', fp);
+    free(newReport.uniqueID);
+    free(newReport.sShortDesc);
+    free(newReport.sDesc);
+    free(newReport.sDateOfCreation);
+    free(newReport.sDateOfFixed);
+    free(newReport.sDateOfClosed);
+    free(newReport.lastWriteInReport);
+    free(newReport.statusOfReport);
     free(sdata);
     fclose(fp);
 
@@ -123,7 +148,8 @@ char *serialize(const bugReport *p)
     char *out = malloc(MAX_RECORD_LEN * sizeof(*out));
     if (!out)
     {
-        fprintf(stderr, "!! could not allocate memory\n");
+        fprintf(stderr, "!! could not allocate memory !!");
+        printNewLines(1);
     }
     else
     {
@@ -149,7 +175,7 @@ void getShortDesc(char *sShortDesc)
     while (c != '0')
     {
         c = getch();
-       if (c == '0' && count <= 3) // If user save but COUNTER IS 3 OR LESS
+        if (c == '0' && count <= 3) // If user save but COUNTER IS 3 OR LESS
         {
             c = 'A'; // SOME RANDOM LETTER FOR CHANGE THAT 0 TO NOT QUIT FROM LOOP
             printNewLines(1);
@@ -220,6 +246,7 @@ void getShortDesc(char *sShortDesc)
             count++;
         }
     }
+    totalLen += count;
 }
 
 void getDesc(char *sDesc)
@@ -303,4 +330,5 @@ void getDesc(char *sDesc)
             count++;
         }
     }
+    totalLen += count;
 }
