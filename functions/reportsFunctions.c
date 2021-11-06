@@ -346,19 +346,30 @@ void editSpecificNewReport()
     }
 
     char currentID[20] = {0};
-    int counterID = 0, isMatched = 0;
+    int counterID = 0, isMatched = 0, j = 0;
+    char record[MAX_RECORD_LEN] = {0};
 
     for (int i = 0; i < countChars; i++)
     {
         if (sData[i] == '#')
         {
-            for (int j = i, counterID = 0; sData[j] != '"'; j++, counterID++)
+            for (j = i, counterID = 0; sData[j] != '"'; j++, counterID++)
             {
                 currentID[counterID] = sData[j];
             }
 
             if (strcmp(inputID, currentID) == 0)
             {
+                sprintf(record, "\"%s\" ", currentID);
+                int recLen = strlen(record);
+                for (int k = j, recCounter = j; sData[k] != '\n'; k++)
+                {
+                    if (sData[k] != '\0')
+                    {
+                        record[recLen++] = sData[k];
+                    }
+                }
+
                 isMatched = 1;
                 break;
             }
@@ -369,12 +380,30 @@ void editSpecificNewReport()
 
     if (isMatched)
     {
-        printf(" You hit ID! ");
+        printf(" -- You hit ID! %s -- ", record);
     }
-    else {
-        printf(" That ID dont exist ");
+    else
+    {
+        printf(" -- Wrong ID --");
     }
     free(sData);
 
     fclose(fp);
 }
+
+void arrayToStruct(char *record, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        
+    }
+}
+
+// char *uniqueID;          //     1. UNIQUE ID NUMBER
+//     char *sShortDesc;        //     2. SHORT DESCRIPTION
+//     char *sDesc;             //     3. DESCRIPTION
+//     char *sDateOfCreation;   //     4. DATE OF CREATION(current date)
+//     char *sDateOfFixed;      //     5. DATE OF FIXED = 0 HERE
+//     char *sDateOfClosed;     //     6. DATE OF CLOSED = 0 HERE
+//     char *lastWriteInReport; //     7. LAST WRITER IN REPORT : TESTER OR PROGRAMMER
+//     char *statusOfReport;    //     8. STATUS : NEW | FIXED | CLOSED
