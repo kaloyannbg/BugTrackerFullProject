@@ -13,8 +13,6 @@
 #define MAX_RECORD_LEN 2048
 #define DATABASE_FILE "DB.csv"
 
-static int totalLen = 0;
-
 typedef struct // WE DEFINE TYPE OF TYPE STRUCTURE
 {
     char *uniqueID;          //     1. UNIQUE ID NUMBER
@@ -38,39 +36,28 @@ void printAllReports()
     createFileIfNotExist(DATABASE_FILE);
     int len = 0;
     fp = fopen(DATABASE_FILE, "r");
-    fseek(fp, 0, SEEK_END); // COUNT BYTES FROM BEGGINING
-
-    len = ftell(fp);
-
-    fseek(fp, 0, SEEK_SET); // SET POINTER AT ZERO POSITION
-
-    char *dynArr = (char *)malloc(len * sizeof(char));
-
-    fread(dynArr, sizeof(char), len * sizeof(char), fp);
-
+    char c = 0;
     int flag = 0;
-    for (int i = 0; i < len - 2; i++)
+    while (c != EOF)
     {
-        if (dynArr[i] == '"')
+        c = fgetc(fp);
+        if (c == '\n' || c == '\r')
+        {
+            putchar('\n');
+        }
+        else if (c == '"')
         {
             flag = (flag == 0);
         }
-        else if (dynArr[i - 1] == '\n' && dynArr[i + 1] == ',')
+        else if (flag == 1 && c != '"')
         {
-            putchar('#');
-            printf("%-2c", dynArr[i]);
+            putchar(c);
         }
-        else if (dynArr[i] == ',' && flag == 0)
+        else if (flag == 0 && c == ',')
         {
-            printf("  |  ");
-        }
-        else
-        {
-            printf("%c", dynArr[i]);
+            printf(" | ");
         }
     }
-
-    free(dynArr);
 
     fclose(fp);
 }
@@ -87,8 +74,6 @@ void createNewReport()
 
     printf(" -- Enter short description at single line (MAX 128 chars) ");
     printNewLines(2);
-
-    totalLen = 0;
 
     makePause();
     newReport.uniqueID = (char *)malloc(IDS_LENGTH);
@@ -113,12 +98,12 @@ void createNewReport()
     strcpy(newReport.uniqueID, itoa(countFileRows(DATABASE_FILE) + 1, buffer, 10));
 
     // printf(" \n UNIQUE ID = %d \n", newReport.uniqueID);
-    strcpy(newReport.sDateOfCreation, "date");
-    strcpy(newReport.sDateOfFixed, "date");
-    strcpy(newReport.sDateOfClosed, "date");
+    // strcpy(newReport.sDateOfCreation, "0-0-0 0:0:0");
+    getCurrentTime(newReport.sDateOfCreation); // save current time in newReport.sDateOfCreation
+    strcpy(newReport.sDateOfFixed, "Not fixed");
+    strcpy(newReport.sDateOfClosed, "Not Closed");
     strcpy(newReport.lastWriteInReport, "Tester");
     strcpy(newReport.statusOfReport, "NEW");
-    printf("%d", totalLen);
 
     fp = fopen(DATABASE_FILE, "a+"); // OPEN DATABASE FOR WRITING
                                      // fwrite(&newReport, sizeof(char), sizeof(newReport), fp);
@@ -126,7 +111,7 @@ void createNewReport()
     char *sdata = serialize(&newReport);
     fprintf(fp, "%s\n", sdata);
 
-    // fputc('\n', fp);
+    // WE FREE DYNAMMIC ARRAYS
     free(newReport.uniqueID);
     free(newReport.sShortDesc);
     free(newReport.sDesc);
@@ -136,11 +121,7 @@ void createNewReport()
     free(newReport.lastWriteInReport);
     free(newReport.statusOfReport);
     free(sdata);
-    fclose(fp);
-
-    // WE FREE DYNAMMIC ARRAYS
-    // free(newReport.sShortDesc);
-    // free(sDesc);
+    fclose(fp); // we close the file
 }
 
 char *serialize(const bugReport *p)
@@ -154,7 +135,7 @@ char *serialize(const bugReport *p)
     else
     {
         memset(out, '\0', MAX_RECORD_LEN);
-        sprintf(out, "\"#%-2s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"", p->uniqueID, p->sShortDesc, p->sDesc, p->sDateOfCreation, p->sDateOfFixed, p->sDateOfClosed, p->lastWriteInReport, p->statusOfReport);
+        sprintf(out, "\"#%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"", p->uniqueID, p->sShortDesc, p->sDesc, p->sDateOfCreation, p->sDateOfFixed, p->sDateOfClosed, p->lastWriteInReport, p->statusOfReport);
     }
     return out;
 }
@@ -231,7 +212,7 @@ void getShortDesc(char *sShortDesc)
             }
         }
 
-        else if (c != '\r')
+        else if (c != '\r' && c != '"')
         {
             clearScreen();
             printCover();
@@ -240,13 +221,12 @@ void getShortDesc(char *sShortDesc)
             printf(" -- PRESS '0' for SAVING -- ");
             printNewLines(1);
             printf(" -- YOUR SHORT DESCRIPTION: ");
-            newReport.sShortDesc[count] = c;
-            newReport.sShortDesc[count + 1] = '\0';
+            newReport.sShortDesc[count++] = c;
+            newReport.sShortDesc[count] = '\0';
             printStringTildaToComma(newReport.sShortDesc);
-            count++;
+            // count++;
         }
     }
-    totalLen += count;
 }
 
 void getDesc(char *sDesc)
@@ -308,10 +288,9 @@ void getDesc(char *sDesc)
                 printf(" -- Press '0' FOR SAVING --");
                 printNewLines(1);
                 printf(" -- YOUR DESCRIPTION: ");
-                newReport.sDesc[count] = c;
-                newReport.sDesc[count + 1] = '\0';
+                newReport.sDesc[count++] = c;
+                newReport.sDesc[count] = '\0';
                 printf("%s", newReport.sDesc);
-                count++;
             }
         }
 
@@ -324,11 +303,78 @@ void getDesc(char *sDesc)
             printf(" -- Press '0' FOR SAVING --");
             printNewLines(1);
             printf(" -- YOUR DESCRIPTION: ");
-            newReport.sDesc[count] = c;
-            newReport.sDesc[count + 1] = '\0';
+            newReport.sDesc[count++] = c;
+            newReport.sDesc[count] = '\0';
             printf("%s", newReport.sDesc);
-            count++;
         }
     }
-    totalLen += count;
+}
+
+void editSpecificNewReport()
+{
+    createFileIfNotExist(DATABASE_FILE);
+
+    char c[20] = {0};
+    printf(" -- Enter ID #: ");
+    scanf("%s", c);
+
+    char inputID[21] = {0};
+    strcat(inputID, "#");
+    strcat(inputID, c);
+
+    int len = 0;
+    fp = fopen(DATABASE_FILE, "r");
+    char currentChar = 0;
+    int countChars = 0;
+    int flag = 0;
+    while (currentChar != EOF)
+    {
+        currentChar = fgetc(fp);
+        countChars++;
+    }
+
+    char *sData = (char *)malloc(countChars * sizeof(char));
+    currentChar = 0, countChars = 0;
+
+    fseek(fp, 0, SEEK_SET);
+
+    while (currentChar != EOF)
+    {
+        currentChar = fgetc(fp);
+        sData[countChars] = currentChar;
+        countChars++;
+    }
+
+    char currentID[20] = {0};
+    int counterID = 0, isMatched = 0;
+
+    for (int i = 0; i < countChars; i++)
+    {
+        if (sData[i] == '#')
+        {
+            for (int j = i, counterID = 0; sData[j] != '"'; j++, counterID++)
+            {
+                currentID[counterID] = sData[j];
+            }
+
+            if (strcmp(inputID, currentID) == 0)
+            {
+                isMatched = 1;
+                break;
+            }
+
+            memset(currentID, '\0', counterID);
+        }
+    }
+
+    if (isMatched)
+    {
+        printf(" You hit ID! ");
+    }
+    else {
+        printf(" That ID dont exist ");
+    }
+    free(sData);
+
+    fclose(fp);
 }
