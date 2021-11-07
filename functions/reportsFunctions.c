@@ -4,6 +4,7 @@
 #include <conio.h>
 #include "../main.h"
 
+#define MAXIMUM_REPORTS 16384
 #define IDS_LENGTH 32
 #define SHORT_DESC_LENGTH 128
 #define DESC_LENGTH 1024
@@ -333,7 +334,7 @@ int isRowExistInFile(char *c, char *out)
     fclose(fp);
 }
 
-void fromArrayToStruct()
+void fromArrayToStruct(int structCount)
 {
     // switch (structCount)
     // {
@@ -392,7 +393,6 @@ void editSpecificNewReport()
         if (recordBuffer[i] == '"')
         {
             flag = (flag == 0);
-
         }
         else if (flag == 1 && recordBuffer[i] != '"')
         {
@@ -436,11 +436,11 @@ void editSpecificNewReport()
         {
             getCurrentTime(specificBuffer[4]);       //    char *sDateOfFixed;      //     5. DATE OF FIXED = 0 HERE
             strcpy(specificBuffer[6], "PROGRAMMER"); //     char *lastWriteInReport; //     7. LAST WRITER IN REPORT : TESTER OR PROGRAMMER
-            strcpy(specificBuffer[7], "FIXED");  // char *statusOfReport;  8. STATUS : NEW | FIXED | CLOSED
+            strcpy(specificBuffer[7], "FIXED");      // char *statusOfReport;  8. STATUS : NEW | FIXED | CLOSED
             char newRecord[MAX_RECORD_LEN] = {0};
             sprintf(newRecord, "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n", specificBuffer[0], specificBuffer[1], specificBuffer[2], specificBuffer[3], specificBuffer[4], specificBuffer[5], specificBuffer[6], specificBuffer[7]);
-            printf(" \n -- %s ", newRecord);
-            // fprintf(fp, "%s,%s,%s,%s,%s,%s,%s,%s\r", specificBuffer[0], specificBuffer[1], specificBuffer[2], specificBuffer[3], specificBuffer[4], specificBuffer[5], specificBuffer[6], specificBuffer[7]);
+            printNewLines(1);
+            printf(" %s ", newRecord);
 
             char buffer[MAX_RECORD_LEN];
             fTemp = fopen("replace.csv", "w");
@@ -470,11 +470,49 @@ void editSpecificNewReport()
 
             fflush(stdin);
 
-            remove("DB.csv");  //ITS SO STRANGE, BUT THIS DONT WORK WITH CONST DATABASE_FILE
-            rename("replace.csv", "DB.csv"); //ITS SO STRANGE, BUT THIS DONT WORK WITH CONST DATABASE_FILE
+            remove("DB.csv");                // ITS SO STRANGE, BUT THIS DONT WORK WITH CONST DATABASE_FILE
+            rename("replace.csv", "DB.csv"); // ITS SO STRANGE, BUT THIS DONT WORK WITH CONST DATABASE_FILE
             printf(" -- SUCESFULLY -- ");
 
             return;
         }
     }
+}
+
+void printReportsWithStatusNEW()
+{
+
+    // fp = fopen(DATABASE_FILE, "r");
+    // char buffer[MAX_RECORD_LEN] = {0};
+    // int countLines = 0;
+
+    // char array[1000][MAX_RECORD_LEN];
+
+    // while (fgets(buffer, MAX_RECORD_LEN, fp))
+    // {
+    //     strcpy(array[countLines], buffer);
+    //     countLines++;
+    // }
+
+    // char record[DESC_LENGTH] = {0};
+    // char records[8][DESC_LENGTH];
+    // int structCounter = 0;
+    // int recordsCounter = 0;
+    // int flag = 0;
+    // int recordcount = 0;
+    // for(int i = 0; i < countLines; i++) {
+
+    //     for(int j = 0; array[i][j] != '\n'; j++) {
+    //         record[recordcount++] = array[i][j];
+    //     }
+    //     record[recordcount++] = '\0';
+
+    //     structCounter++;
+
+    //     recordcount = 0;
+    // }
+
+    // fclose(fp);
+    // fclose(fTemp);
+
 }
