@@ -30,6 +30,7 @@ char *serialize(const bugReport *p); // WE USE CONST FOR NOT CHANGE CHARS IN ARR
 bugReport newReport;
 
 FILE *fp;
+FILE *fTemp;
 
 void printAllReports()
 {
@@ -310,100 +311,174 @@ void getDesc(char *sDesc)
     }
 }
 
-void editSpecificNewReport()
+int isRowExistInFile(char *c, char *out)
 {
-    createFileIfNotExist(DATABASE_FILE);
-
-    char c[20] = {0};
-    printf(" -- Enter ID #: ");
-    scanf("%s", c);
-
-    char inputID[21] = {0};
-    strcat(inputID, "#");
-    strcat(inputID, c);
-
-    int len = 0;
     fp = fopen(DATABASE_FILE, "r");
-    char currentChar = 0;
-    int countChars = 0;
-    int flag = 0;
-    while (currentChar != EOF)
+    char buffer[MAX_RECORD_LEN] = {0};
+    int count = 0, isMatched = 0;
+    int charToInt = atoi(c);
+    while ((fgets(buffer, MAX_RECORD_LEN, fp)) != NULL)
     {
-        currentChar = fgetc(fp);
-        countChars++;
-    }
-
-    char *sData = (char *)malloc(countChars * sizeof(char));
-    currentChar = 0, countChars = 0;
-
-    fseek(fp, 0, SEEK_SET);
-
-    while (currentChar != EOF)
-    {
-        currentChar = fgetc(fp);
-        sData[countChars] = currentChar;
-        countChars++;
-    }
-
-    char currentID[20] = {0};
-    int counterID = 0, isMatched = 0, j = 0;
-    char record[MAX_RECORD_LEN] = {0};
-
-    for (int i = 0; i < countChars; i++)
-    {
-        if (sData[i] == '#')
+        count++;
+        if (charToInt == count)
         {
-            for (j = i, counterID = 0; sData[j] != '"'; j++, counterID++)
-            {
-                currentID[counterID] = sData[j];
-            }
-
-            if (strcmp(inputID, currentID) == 0)
-            {
-                sprintf(record, "\"%s\" ", currentID);
-                int recLen = strlen(record);
-                for (int k = j, recCounter = j; sData[k] != '\n'; k++)
-                {
-                    if (sData[k] != '\0')
-                    {
-                        record[recLen++] = sData[k];
-                    }
-                }
-
-                isMatched = 1;
-                break;
-            }
-
-            memset(currentID, '\0', counterID);
+            strcpy(out, buffer);
+            isMatched = 1;
+            break;
         }
     }
 
-    if (isMatched)
-    {
-        printf(" -- You hit ID! %s -- ", record);
-    }
-    else
-    {
-        printf(" -- Wrong ID --");
-    }
-    free(sData);
+    return isMatched;
 
     fclose(fp);
 }
 
-void arrayToStruct(char *record, int size)
+void fromArrayToStruct()
 {
-    for (int i = 0; i < size; i++)
-    {
-        
-    }
+    // switch (structCount)
+    // {
+    // case 0:
+    //     strcpy(newReport.uniqueID, specificBuffer[structCount]);
+    //     break;
+    // case 1:
+    //     strcpy(newReport.sShortDesc, specificBuffer[structCount]);
+    //     break;
+    // case 2:
+    //     strcpy(newReport.sDesc, specificBuffer[structCount]);
+    //     break;
+    // case 3:
+    //     strcpy(newReport.sDateOfCreation, specificBuffer[structCount]);
+    //     break;
+    // case 4:
+    //     strcpy(newReport.sDateOfFixed, specificBuffer[structCount]);
+    //     break;
+    // case 5:
+    //     strcpy(newReport.sDateOfClosed, specificBuffer[structCount]);
+    //     break;
+    // case 6:
+    //     strcpy(newReport.lastWriteInReport, specificBuffer[structCount]);
+    //     break;
+    // case 7:
+    //     strcpy(newReport.statusOfReport, specificBuffer[structCount]);
+    //     break;
+    // default:
+    //     break;
+    // }
 }
 
-// char *uniqueID;          //     1. UNIQUE ID NUMBER
-//     char *sShortDesc;        //     2. SHORT DESCRIPTION
-//     char *sDesc;             //     3. DESCRIPTION
-//     char *sDateOfCreation;   //     4. DATE OF CREATION(current date)
-//     char *sDateOfFixed;      //     5. DATE OF FIXED = 0 HERE
-//     char *sDateOfClosed;     //     6. DATE OF CLOSED = 0 HERE
-//     char *lastWriteInReport; //     7. LAST WRITER IN REPORT : TESTER OR PROGRAMMER
-//     char *statusOfReport;    //     8. STATUS : NEW | FIXED | CLOSED
+void editSpecificNewReport()
+{
+    createFileIfNotExist(DATABASE_FILE);
+    char c[20] = {0};
+    printf(" -- Enter ID #: ");
+    scanf("%s", c);
+    char recordBuffer[MAX_RECORD_LEN] = {0};
+    memset(recordBuffer, '\0', MAX_RECORD_LEN);
+    int isRowExist = isRowExistInFile(c, recordBuffer);
+
+    if (!isRowExist)
+    {
+        printf(" -- Wrong ID -- ");
+        return;
+    }
+
+    int bufferLength = strlen(recordBuffer);
+    int flag = 0, structCount = 0;
+    int charCount = 0;
+    char specificBuffer[8][DESC_LENGTH];
+
+    for (int i = 0; i < bufferLength; i++)
+    {
+        if (recordBuffer[i] == '"')
+        {
+            flag = (flag == 0);
+            if (charCount == 0)
+            {
+                specificBuffer[structCount][charCount++] = '"';
+            }
+        }
+        else if (flag == 1 && recordBuffer[i] != '"')
+        {
+            specificBuffer[structCount][charCount++] = recordBuffer[i];
+
+            if (recordBuffer[i + 1] == '"')
+            {
+                specificBuffer[structCount][charCount++] = '"';
+                specificBuffer[structCount][charCount] = '\0';
+
+                structCount++;
+                charCount = 0;
+            }
+        }
+    }
+
+    int inputIndex = atoi(c);
+
+    printf(" -- %s", recordBuffer);
+    if (strcmp(specificBuffer[7], "\"FIXED\"") == 0)
+    {
+        printf(" -- REPORT (#BUG) IS ALREADY FIXED! --");
+        return;
+    }
+    else if (strcmp(specificBuffer[7], "\"CLOSED\"") == 0)
+    {
+        printf(" -- REPORT (#BUG) IS CLOSED! --");
+        return;
+    }
+    else if (strcmp(specificBuffer[7], "\"NEW\"") == 0)
+    {
+        char contin = 0;
+        printf(" -- Do you want to mark REPORT (#BUG) N: %d as fixed? [y/n]: ", inputIndex);
+        fflush(stdin);
+        getCharFromAdress(&contin);
+        if (contin == 'n' || contin == 'n')
+        {
+            printf(" -- The bug is not fixed! --");
+            return;
+        }
+        else if (contin == 'y' || contin == 'Y')
+        {
+            getCurrentTime(specificBuffer[4]);       //    char *sDateOfFixed;      //     5. DATE OF FIXED = 0 HERE
+            strcpy(specificBuffer[6], "PROGRAMMER"); //     char *lastWriteInReport; //     7. LAST WRITER IN REPORT : TESTER OR PROGRAMMER
+            strcpy(specificBuffer[7], "FIXED");  // char *statusOfReport;  8. STATUS : NEW | FIXED | CLOSED
+            char newRecord[MAX_RECORD_LEN] = {0};
+            sprintf(newRecord, "%s,%s,%s,%s,\"%s\",%s,\"%s\",\"%s\"\n", specificBuffer[0], specificBuffer[1], specificBuffer[2], specificBuffer[3], specificBuffer[4], specificBuffer[5], specificBuffer[6], specificBuffer[7]);
+            printf(" \n -- %s ", newRecord);
+            // fprintf(fp, "%s,%s,%s,%s,%s,%s,%s,%s\r", specificBuffer[0], specificBuffer[1], specificBuffer[2], specificBuffer[3], specificBuffer[4], specificBuffer[5], specificBuffer[6], specificBuffer[7]);
+
+            char buffer[MAX_RECORD_LEN];
+            fTemp = fopen("replace.csv", "w");
+            int count = 0;
+            fseek(fp, 0, SEEK_SET);
+            fseek(fTemp, 0, SEEK_SET);
+            fflush(stdin);
+
+            while ((fgets(buffer, MAX_RECORD_LEN, fp)) != NULL)
+            {
+                count++;
+
+                /* If current line is line to replace */
+                if (strcmp(buffer, recordBuffer) == 0)
+                {
+                    fputs(newRecord, fTemp);
+                }
+                else if (strcmp(buffer, recordBuffer) != 0)
+                {
+                    fputs(buffer, fTemp);
+                }
+            }
+            fseek(fp, 0, SEEK_SET);
+            fseek(fTemp, 0, SEEK_SET);
+            fclose(fp);
+            fclose(fTemp);
+
+            fflush(stdin);
+
+            remove(DATABASE_FILE);
+            rename("replace.csv", DATABASE_FILE);
+            printf(" -- SUCESFULLY -- ");
+
+            return;
+        }
+    }
+}
