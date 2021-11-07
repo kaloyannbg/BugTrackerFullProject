@@ -392,10 +392,7 @@ void editSpecificNewReport()
         if (recordBuffer[i] == '"')
         {
             flag = (flag == 0);
-            if (charCount == 0)
-            {
-                specificBuffer[structCount][charCount++] = '"';
-            }
+
         }
         else if (flag == 1 && recordBuffer[i] != '"')
         {
@@ -403,7 +400,6 @@ void editSpecificNewReport()
 
             if (recordBuffer[i + 1] == '"')
             {
-                specificBuffer[structCount][charCount++] = '"';
                 specificBuffer[structCount][charCount] = '\0';
 
                 structCount++;
@@ -415,17 +411,17 @@ void editSpecificNewReport()
     int inputIndex = atoi(c);
 
     printf(" -- %s", recordBuffer);
-    if (strcmp(specificBuffer[7], "\"FIXED\"") == 0)
+    if (strcmp(specificBuffer[7], "FIXED") == 0)
     {
         printf(" -- REPORT (#BUG) IS ALREADY FIXED! --");
         return;
     }
-    else if (strcmp(specificBuffer[7], "\"CLOSED\"") == 0)
+    else if (strcmp(specificBuffer[7], "CLOSED") == 0)
     {
         printf(" -- REPORT (#BUG) IS CLOSED! --");
         return;
     }
-    else if (strcmp(specificBuffer[7], "\"NEW\"") == 0)
+    else if (strcmp(specificBuffer[7], "NEW") == 0)
     {
         char contin = 0;
         printf(" -- Do you want to mark REPORT (#BUG) N: %d as fixed? [y/n]: ", inputIndex);
@@ -442,7 +438,7 @@ void editSpecificNewReport()
             strcpy(specificBuffer[6], "PROGRAMMER"); //     char *lastWriteInReport; //     7. LAST WRITER IN REPORT : TESTER OR PROGRAMMER
             strcpy(specificBuffer[7], "FIXED");  // char *statusOfReport;  8. STATUS : NEW | FIXED | CLOSED
             char newRecord[MAX_RECORD_LEN] = {0};
-            sprintf(newRecord, "%s,%s,%s,%s,\"%s\",%s,\"%s\",\"%s\"\n", specificBuffer[0], specificBuffer[1], specificBuffer[2], specificBuffer[3], specificBuffer[4], specificBuffer[5], specificBuffer[6], specificBuffer[7]);
+            sprintf(newRecord, "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n", specificBuffer[0], specificBuffer[1], specificBuffer[2], specificBuffer[3], specificBuffer[4], specificBuffer[5], specificBuffer[6], specificBuffer[7]);
             printf(" \n -- %s ", newRecord);
             // fprintf(fp, "%s,%s,%s,%s,%s,%s,%s,%s\r", specificBuffer[0], specificBuffer[1], specificBuffer[2], specificBuffer[3], specificBuffer[4], specificBuffer[5], specificBuffer[6], specificBuffer[7]);
 
@@ -474,8 +470,8 @@ void editSpecificNewReport()
 
             fflush(stdin);
 
-            remove(DATABASE_FILE);
-            rename("replace.csv", DATABASE_FILE);
+            remove("DB.csv");  //ITS SO STRANGE, BUT THIS DONT WORK WITH CONST DATABASE_FILE
+            rename("replace.csv", "DB.csv"); //ITS SO STRANGE, BUT THIS DONT WORK WITH CONST DATABASE_FILE
             printf(" -- SUCESFULLY -- ");
 
             return;
