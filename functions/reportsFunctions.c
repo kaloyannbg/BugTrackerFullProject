@@ -1,18 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <conio.h>
 #include "../main.h"
-
-#define MAXIMUM_REPORTS 16384
-#define IDS_LENGTH 32
-#define SHORT_DESC_LENGTH 128
-#define DESC_LENGTH 1024
-#define DATE_LENGTH 128
-#define WRITER_LENGTH 16
-#define STATUS_LENGTH 8
-#define MAX_RECORD_LEN 2048
-#define DATABASE_FILE "DB.csv"
 
 typedef struct // WE DEFINE TYPE OF TYPE STRUCTURE
 {
@@ -24,41 +13,55 @@ typedef struct // WE DEFINE TYPE OF TYPE STRUCTURE
     char *sDateOfClosed;     //     6. DATE OF CLOSED = 0 HERE
     char *lastWriteInReport; //     7. LAST WRITER IN REPORT : TESTER OR PROGRAMMER
     char *statusOfReport;    //     8. STATUS : NEW | FIXED | CLOSED
-} bugReport;                 // AND GIVE NAME HIM BUG REPORT
 
-char *serialize(const bugReport *p); // WE USE CONST FOR NOT CHANGE CHARS IN ARRAYS
+} bugReport; // AND GIVE NAME HIM BUG REPORT
 
 bugReport newReport;
-
-FILE *fp;
-FILE *fTemp;
 
 void printAllReports()
 {
     createFileIfNotExist(DATABASE_FILE);
-    int len = 0;
     fp = fopen(DATABASE_FILE, "r");
-    char c = 0;
-    int flag = 0;
-    while (c != EOF)
+    char buffer[MAX_RECORD_LEN];
+    char *fgetsFile = fgets(buffer, MAX_RECORD_LEN, fp);
+    char miniBuffer[20]; // buffer with spaces
+    int miniBufferCounter = 0, i = 0, j = 0;
+    int countRows = 0;
+    while (fgetsFile != NULL)
     {
-        c = fgetc(fp);
-        if (c == '\n' || c == '\r')
+        countRows++;
+        for (int i = 0; i < strlen(buffer); i++)
         {
-            putchar('\n');
+            if (buffer[i] == ',')
+            {
+                if (miniBufferCounter > 0)
+                {
+                }
+                printf(" | ");
+            }
+            else if (buffer[i] != ',')
+            {
+                if (buffer[i] == '#' && i == 0)
+                {
+                    for (j = 0; buffer[j] != ','; j++)
+                    {
+                        miniBuffer[miniBufferCounter++] = buffer[j];
+                    }
+                    miniBuffer[miniBufferCounter] = '\0';
+                    printf("%s ", miniBuffer);
+                    if (strlen(miniBuffer) < 3)
+                    {
+                        printf(" ");
+                    } 
+                }
+                else if (i > strlen(miniBuffer))
+                {
+                    printf("%c", buffer[i]);
+                }
+            }
         }
-        else if (c == '"')
-        {
-            flag = (flag == 0);
-        }
-        else if (flag == 1 && c != '"')
-        {
-            putchar(c);
-        }
-        else if (flag == 0 && c == ',')
-        {
-            printf(" | ");
-        }
+        fgetsFile = fgets(buffer, MAX_RECORD_LEN, fp);
+        miniBufferCounter = 0;
     }
 
     fclose(fp);
@@ -68,52 +71,54 @@ void createNewReport()
 {
     createFileIfNotExist(DATABASE_FILE);
 
-    // char *sShortDesc = malloc(SHORT_DESC_LENGTH * sizeof(char)); // 128
-    // char *sDesc = malloc(DESC_LENGTH * sizeof(char));            // 1024
-
-    printf(" -- REPORT (#BUG) NUMBER: #%d | CURRENT STATUS: NEW -- ", countFileRows(DATABASE_FILE) + 1);
+    clearScreen();
+    printCover();
+    printLoggedAsTester();
     printNewLines(1);
+    newReport.sShortDesc = calloc(SHORT_DESC_LENGTH, sizeof(char));
+    printf(" --- Enter text for short description. REPORT ID#%d ", countFileRows(DATABASE_FILE) + 1);
+    getSentence(newReport.sShortDesc, 4, SHORT_DESC_LENGTH);
+    printNewLines(1);
+    if (strlen(newReport.sShortDesc) < 4)
+    {
+        printf(" --- Log in as tester and try again! ---");
+        return;
+    }
+    newReport.sDesc = calloc(DESC_LENGTH, sizeof(char));
+    printNewLines(1);
+    printf(" --- Enter text for description. --- ");
+    getSentence(newReport.sDesc, 10, DESC_LENGTH);
+    printNewLines(1);
+    if (strlen(newReport.sDesc) < 10)
+    {
+        printf(" --- Log in as tester and try again! ---");
+        return;
+    }
 
-    printf(" -- Enter short description at single line (MAX 128 chars) ");
-    printNewLines(2);
-
-    makePause();
     newReport.uniqueID = (char *)malloc(IDS_LENGTH);
-    newReport.sShortDesc = malloc(SHORT_DESC_LENGTH);
-    newReport.sDesc = (char *)malloc(DESC_LENGTH);
+    // newReport.sShortDesc = (char *)malloc(SHORT_DESC_LENGTH); WE ARE ALREADY CREATE IT
+    // newReport.sDesc = (char *)malloc(DESC_LENGTH); WE ARE ALREADY CREATE IT
     newReport.sDateOfCreation = (char *)malloc(DATE_LENGTH);
     newReport.sDateOfFixed = (char *)malloc(DATE_LENGTH);
     newReport.sDateOfClosed = (char *)malloc(DATE_LENGTH);
     newReport.lastWriteInReport = (char *)malloc(WRITER_LENGTH);
     newReport.statusOfReport = (char *)malloc(STATUS_LENGTH);
 
-    getShortDesc(newReport.sShortDesc);
-    fflush(stdin);
-
-    getDesc(newReport.sDesc);
-
-    printNewLines(2);
-    printf(" Your short desc: %s", newReport.sShortDesc);
-    printNewLines(1);
-    printf(" Your DESC: %s", newReport.sDesc);
     char buffer[IDS_LENGTH];
     strcpy(newReport.uniqueID, itoa(countFileRows(DATABASE_FILE) + 1, buffer, 10));
 
-    // printf(" \n UNIQUE ID = %d \n", newReport.uniqueID);
-    // strcpy(newReport.sDateOfCreation, "0-0-0 0:0:0");
     getCurrentTime(newReport.sDateOfCreation); // save current time in newReport.sDateOfCreation
     strcpy(newReport.sDateOfFixed, "Not fixed");
     strcpy(newReport.sDateOfClosed, "Not Closed");
     strcpy(newReport.lastWriteInReport, "Tester");
     strcpy(newReport.statusOfReport, "NEW");
 
-    fp = fopen(DATABASE_FILE, "a+"); // OPEN DATABASE FOR WRITING
-                                     // fwrite(&newReport, sizeof(char), sizeof(newReport), fp);
-                                     // fwrite(&newReport, sizeof(struct bugReport), sizeof(char), fp);
-    char *sdata = serialize(&newReport);
-    fprintf(fp, "%s\n", sdata);
+    char *arrayPutInFile = (char *)malloc(MAX_RECORD_LEN);
+    fp = fopen(DATABASE_FILE, "a+");
+    sprintf(arrayPutInFile, "#%s,%s,%s,%s,%s,%s,%s,%s", newReport.uniqueID, newReport.sShortDesc, newReport.sDesc, newReport.sDateOfCreation, newReport.sDateOfFixed, newReport.sDateOfClosed, newReport.lastWriteInReport, newReport.statusOfReport);
+    fprintf(fp, "%s\n", arrayPutInFile);
+    fclose(fp);
 
-    // WE FREE DYNAMMIC ARRAYS
     free(newReport.uniqueID);
     free(newReport.sShortDesc);
     free(newReport.sDesc);
@@ -122,397 +127,233 @@ void createNewReport()
     free(newReport.sDateOfClosed);
     free(newReport.lastWriteInReport);
     free(newReport.statusOfReport);
-    free(sdata);
-    fclose(fp); // we close the file
+    free(arrayPutInFile);
+
 }
 
-char *serialize(const bugReport *p)
+int isReportNew(char *status)
 {
-    char *out = malloc(MAX_RECORD_LEN * sizeof(*out));
-    if (!out)
+    char NEW[] = "NEW\n";
+    if (strcmp(status, NEW) == 0)
     {
-        fprintf(stderr, "!! could not allocate memory !!");
-        printNewLines(1);
+        return 1;
     }
-    else
-    {
-        memset(out, '\0', MAX_RECORD_LEN);
-        sprintf(out, "\"#%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"", p->uniqueID, p->sShortDesc, p->sDesc, p->sDateOfCreation, p->sDateOfFixed, p->sDateOfClosed, p->lastWriteInReport, p->statusOfReport);
-    }
-    return out;
+
+    return 0;
 }
 
-void getShortDesc(char *sShortDesc)
+int isReportFixed(char *status)
 {
-
-    char c = 0;
-    int count = 0;
-    clearScreen();
-    printCover();
-    printLoggedAsTester();
-    printNewLines(1);
-    printf(" -- PRESS '0' for SAVING -- ");
-    printNewLines(1);
-    printf(" -- YOUR SHORT DESCRIPTION: ");
-
-    while (c != '0')
+    char FIXED[] = "FIXED\n";
+    if (strcmp(status, FIXED) == 0)
     {
-        c = getch();
-        if (c == '0' && count <= 3) // If user save but COUNTER IS 3 OR LESS
-        {
-            c = 'A'; // SOME RANDOM LETTER FOR CHANGE THAT 0 TO NOT QUIT FROM LOOP
-            printNewLines(1);
-            printf(" -- You can save minimum 4 symbols at short description! Please enter more chars! ");
-            printNewLines(1);
-        }
-        else if (c == '0')
-        {
-            newReport.sShortDesc[++count] = ',';
-            newReport.sShortDesc[++count] = '\0';
-            printNewLines(1);
-            printf(" -- Saved! --");
-            break;
-        }
-        else if (c == '\b')
-        {
-            clearScreen();
-            printCover();
-            printLoggedAsTester();
-            printNewLines(1);
-            printf(" -- PRESS '0' for SAVING -- ");
-            printNewLines(1);
-            printf(" -- YOUR SHORT DESCRIPTION: ");
-            if (count < 1)
-            {
-                count = 0;
-            }
-            else if (count > 0)
-            {
-                newReport.sShortDesc[--count] = '\0';
-                printStringTildaToComma(newReport.sShortDesc);
-            }
-        }
-        else if (count > SHORT_DESC_LENGTH)
-        {
-            printf(" \b"); // WE PRINT SPACE, AND DELETE IT WITH \b (backspace)
-        }
-        else if (c == ' ')
-        {
-            if (newReport.sShortDesc[count - 1] != ' ')
-            {
-                clearScreen();
-                printCover();
-                printLoggedAsTester();
-                printNewLines(1);
-                printf(" -- PRESS '0' for SAVING -- ");
-                printNewLines(1);
-                printf(" -- YOUR SHORT DESCRIPTION: ");
-                newReport.sShortDesc[count] = c;
-                newReport.sShortDesc[count + 1] = '\0';
-                printStringTildaToComma(newReport.sShortDesc);
-                count++;
-            }
-        }
-
-        else if (c != '\r' && c != '"')
-        {
-            clearScreen();
-            printCover();
-            printLoggedAsTester();
-            printNewLines(1);
-            printf(" -- PRESS '0' for SAVING -- ");
-            printNewLines(1);
-            printf(" -- YOUR SHORT DESCRIPTION: ");
-            newReport.sShortDesc[count++] = c;
-            newReport.sShortDesc[count] = '\0';
-            printStringTildaToComma(newReport.sShortDesc);
-            // count++;
-        }
+        return 1;
     }
-}
-
-void getDesc(char *sDesc)
-{
-
-    char c = 0;
-    int count = 0;
-    clearScreen();
-    printCover();
-    printLoggedAsTester();
-    printNewLines(1);
-    printf(" -- Press '0' FOR SAVING --");
-    printNewLines(1);
-    printf(" -- YOUR DESCRIPTION: ");
-    while (c != '0')
-    {
-        c = getch();
-        if (c == '0' && count <= 10) // If user save but COUNTER IS 10 OR LESS
-        {
-            // memset(newReport.sShortDesc, 0, count);
-            c = 'A'; // SOME RANDOM LETTER FOR CHANGE THAT 0 TO NOT QUIT FROM LOOP
-            printNewLines(1);
-            printf(" -- You can save minimum 11 symbols at description! Please enter more chars! ");
-            printNewLines(1);
-        }
-        else if (c == '0')
-        {
-            printNewLines(1);
-            printf(" -- Saved! --");
-            break;
-        }
-        else if (c == '\b')
-        {
-            clearScreen();
-            printCover();
-            printLoggedAsTester();
-            printNewLines(1);
-            printf(" -- Press '0' FOR SAVING --");
-            printNewLines(1);
-            printf(" -- YOUR DESCRIPTION: ");
-            if (count > 0)
-            {
-                newReport.sDesc[--count] = '\0';
-                printf("%s", newReport.sDesc);
-            }
-        }
-        else if (count > DESC_LENGTH)
-        {
-            printf(" \b"); // WE PRINT SPACE, AND DELETE IT WITH \b (backspace)
-        }
-        else if (c == ' ')
-        {
-            if (newReport.sDesc[count - 1] != ' ')
-            {
-                clearScreen();
-                printCover();
-                printLoggedAsTester();
-                printNewLines(1);
-                printf(" -- Press '0' FOR SAVING --");
-                printNewLines(1);
-                printf(" -- YOUR DESCRIPTION: ");
-                newReport.sDesc[count++] = c;
-                newReport.sDesc[count] = '\0';
-                printf("%s", newReport.sDesc);
-            }
-        }
-
-        else if (c != '\r')
-        {
-            clearScreen();
-            printCover();
-            printLoggedAsTester();
-            printNewLines(1);
-            printf(" -- Press '0' FOR SAVING --");
-            printNewLines(1);
-            printf(" -- YOUR DESCRIPTION: ");
-            newReport.sDesc[count++] = c;
-            newReport.sDesc[count] = '\0';
-            printf("%s", newReport.sDesc);
-        }
-    }
-}
-
-int isRowExistInFile(char *c, char *out)
-{
-    fp = fopen(DATABASE_FILE, "r");
-    char buffer[MAX_RECORD_LEN] = {0};
-    int count = 0, isMatched = 0;
-    int charToInt = atoi(c);
-    while ((fgets(buffer, MAX_RECORD_LEN, fp)) != NULL)
-    {
-        count++;
-        if (charToInt == count)
-        {
-            strcpy(out, buffer);
-            isMatched = 1;
-            break;
-        }
-    }
-
-    return isMatched;
-
-    fclose(fp);
-}
-
-void fromArrayToStruct(int structCount)
-{
-    // switch (structCount)
-    // {
-    // case 0:
-    //     strcpy(newReport.uniqueID, specificBuffer[structCount]);
-    //     break;
-    // case 1:
-    //     strcpy(newReport.sShortDesc, specificBuffer[structCount]);
-    //     break;
-    // case 2:
-    //     strcpy(newReport.sDesc, specificBuffer[structCount]);
-    //     break;
-    // case 3:
-    //     strcpy(newReport.sDateOfCreation, specificBuffer[structCount]);
-    //     break;
-    // case 4:
-    //     strcpy(newReport.sDateOfFixed, specificBuffer[structCount]);
-    //     break;
-    // case 5:
-    //     strcpy(newReport.sDateOfClosed, specificBuffer[structCount]);
-    //     break;
-    // case 6:
-    //     strcpy(newReport.lastWriteInReport, specificBuffer[structCount]);
-    //     break;
-    // case 7:
-    //     strcpy(newReport.statusOfReport, specificBuffer[structCount]);
-    //     break;
-    // default:
-    //     break;
-    // }
+    return 0;
 }
 
 void editSpecificNewReport()
 {
     createFileIfNotExist(DATABASE_FILE);
-    char c[20] = {0};
-    printf(" -- Enter ID #: ");
-    scanf("%s", c);
-    char recordBuffer[MAX_RECORD_LEN] = {0};
-    memset(recordBuffer, '\0', MAX_RECORD_LEN);
-    int isRowExist = isRowExistInFile(c, recordBuffer);
 
-    if (!isRowExist)
+    char getID[20] = {0};
+
+    printf(" -- Enter id TO FIX #: ");
+    scanf("%s", getID);
+
+    int id = atoi(getID);
+
+    if (!isRowExist(id, DATABASE_FILE))
     {
         printf(" -- Wrong ID -- ");
         return;
     }
 
-    int bufferLength = strlen(recordBuffer);
-    int flag = 0, structCount = 0;
-    int charCount = 0;
-    char specificBuffer[8][DESC_LENGTH];
+    char currentRowRecord[MAX_RECORD_LEN];
+    getRowByIDIfExist(id, DATABASE_FILE, currentRowRecord);
+    char currentRowCopy[MAX_RECORD_LEN];
+    strcpy(currentRowCopy, currentRowRecord);
 
-    for (int i = 0; i < bufferLength; i++)
+    strcat(currentRowRecord, ",");
+
+    int structCount = sizeof(bugReport) / sizeof(char *); // We get bytes of bugReport structure and divison by char *, because we have only char* in
+
+    char **explodeCurrentRecord = (char **)calloc(structCount, sizeof(char *));
+
+    int lengthCurrentRow = strlen(currentRowRecord);
+
+    char buffer[DESC_LENGTH];
+
+    int countStrings = 0;
+    int countChars = 0;
+
+    for (int i = 0; i < lengthCurrentRow; i++)
     {
-        if (recordBuffer[i] == '"')
+        if (currentRowRecord[i] != ',')
         {
-            flag = (flag == 0);
+            buffer[countChars++] = currentRowRecord[i];
         }
-        else if (flag == 1 && recordBuffer[i] != '"')
+        else if (currentRowRecord[i] == ',')
         {
-            specificBuffer[structCount][charCount++] = recordBuffer[i];
-
-            if (recordBuffer[i + 1] == '"')
-            {
-                specificBuffer[structCount][charCount] = '\0';
-
-                structCount++;
-                charCount = 0;
-            }
+            buffer[countChars] = '\0';
+            countChars = 0;
+            explodeCurrentRecord[countStrings] = (char *)calloc((strlen(buffer) + 1), sizeof(char));
+            strcpy(explodeCurrentRecord[countStrings], buffer);
+            memset(buffer, '\0', strlen(buffer));
+            countStrings++;
         }
     }
 
-    int inputIndex = atoi(c);
+    newReport.statusOfReport = explodeCurrentRecord[7];
 
-    printf(" -- %s", recordBuffer);
-    if (strcmp(specificBuffer[7], "FIXED") == 0)
+    printf(" --- %s ", currentRowCopy);
+
+    if (!isReportNew(newReport.statusOfReport))
     {
-        printf(" -- REPORT (#BUG) IS ALREADY FIXED! --");
+        printf(" --- Record is not \"NEW\". You can\'t change it. --- ");
+        free2DArrFromMemory(explodeCurrentRecord, structCount);
         return;
     }
-    else if (strcmp(specificBuffer[7], "CLOSED") == 0)
+
+    printf(" --- ID #%d is NEW. --- ", id);
+    printNewLines(1);
+    printf(" -- Do you want to change Report #%d to FIXED? [y/n]: ", id);
+
+    if (!isContinue())
     {
-        printf(" -- REPORT (#BUG) IS CLOSED! --");
+        printf(" --- The BUG REPORT is not FIXED! --- ");
+        free2DArrFromMemory(explodeCurrentRecord, structCount);
         return;
     }
-    else if (strcmp(specificBuffer[7], "NEW") == 0)
+
+    char currDate[DATE_LENGTH];
+    getCurrentTime(currDate);
+    strcpy(explodeCurrentRecord[4], currDate);
+    strcpy(explodeCurrentRecord[6], "PROGRAMMER"); // 7 newReport.lastWriteInReport =
+    strcpy(explodeCurrentRecord[7], "FIXED");      // 8 newReport.statusOfReport =
+    char newRow[MAX_RECORD_LEN];
+    sprintf(newRow, "%s,%s,%s,%s,%s,%s,%s,%s\n", explodeCurrentRecord[0], explodeCurrentRecord[1], explodeCurrentRecord[2], explodeCurrentRecord[3], explodeCurrentRecord[4], explodeCurrentRecord[5], explodeCurrentRecord[6], explodeCurrentRecord[7]);
+    clearScreen();
+    printCover();
+    printNewLines(1);
+    printLoggedAsProgrammer();
+    printNewLines(2);
+    if (rewriteFileWithOneRow(REPLACE_FILE, DATABASE_FILE, currentRowCopy, newRow))
     {
-        char contin = 0;
-        printf(" -- Do you want to mark REPORT (#BUG) N: %d as fixed? [y/n]: ", inputIndex);
-        fflush(stdin);
-        getCharFromAdress(&contin);
-        if (contin == 'n' || contin == 'n')
-        {
-            printf(" -- The bug is not fixed! --");
-            return;
-        }
-        else if (contin == 'y' || contin == 'Y')
-        {
-            getCurrentTime(specificBuffer[4]);       //    char *sDateOfFixed;      //     5. DATE OF FIXED = 0 HERE
-            strcpy(specificBuffer[6], "PROGRAMMER"); //     char *lastWriteInReport; //     7. LAST WRITER IN REPORT : TESTER OR PROGRAMMER
-            strcpy(specificBuffer[7], "FIXED");      // char *statusOfReport;  8. STATUS : NEW | FIXED | CLOSED
-            char newRecord[MAX_RECORD_LEN] = {0};
-            sprintf(newRecord, "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n", specificBuffer[0], specificBuffer[1], specificBuffer[2], specificBuffer[3], specificBuffer[4], specificBuffer[5], specificBuffer[6], specificBuffer[7]);
-            printNewLines(1);
-            printf(" %s ", newRecord);
-
-            char buffer[MAX_RECORD_LEN];
-            fTemp = fopen("replace.csv", "w");
-            int count = 0;
-            fseek(fp, 0, SEEK_SET);
-            fseek(fTemp, 0, SEEK_SET);
-            fflush(stdin);
-
-            while ((fgets(buffer, MAX_RECORD_LEN, fp)) != NULL)
-            {
-                count++;
-
-                /* If current line is line to replace */
-                if (strcmp(buffer, recordBuffer) == 0)
-                {
-                    fputs(newRecord, fTemp);
-                }
-                else if (strcmp(buffer, recordBuffer) != 0)
-                {
-                    fputs(buffer, fTemp);
-                }
-            }
-            fseek(fp, 0, SEEK_SET);
-            fseek(fTemp, 0, SEEK_SET);
-            fclose(fp);
-            fclose(fTemp);
-
-            fflush(stdin);
-
-            remove("DB.csv");                // ITS SO STRANGE, BUT THIS DONT WORK WITH CONST DATABASE_FILE
-            rename("replace.csv", "DB.csv"); // ITS SO STRANGE, BUT THIS DONT WORK WITH CONST DATABASE_FILE
-            printf(" -- SUCESFULLY -- ");
-
-            return;
-        }
+        printf(" --- YOU FIX THE REPORT (#BUG) :  %s", newRow);
     }
+    else if (!rewriteFileWithOneRow(REPLACE_FILE, DATABASE_FILE, currentRowCopy, newRow))
+    {
+        printf(" --- Error! ---");
+    }
+
+    free2DArrFromMemory(explodeCurrentRecord, structCount);
+
+    return;
 }
 
-void printReportsWithStatusNEW()
+void verifyFixedReport()
 {
+    createFileIfNotExist(DATABASE_FILE);
 
-    // fp = fopen(DATABASE_FILE, "r");
-    // char buffer[MAX_RECORD_LEN] = {0};
-    // int countLines = 0;
+    char getID[20] = {0};
 
-    // char array[1000][MAX_RECORD_LEN];
+    printf(" -- Enter id TO VERIFY #: ");
+    scanf("%s", getID);
 
-    // while (fgets(buffer, MAX_RECORD_LEN, fp))
-    // {
-    //     strcpy(array[countLines], buffer);
-    //     countLines++;
-    // }
+    int id = atoi(getID);
 
-    // char record[DESC_LENGTH] = {0};
-    // char records[8][DESC_LENGTH];
-    // int structCounter = 0;
-    // int recordsCounter = 0;
-    // int flag = 0;
-    // int recordcount = 0;
-    // for(int i = 0; i < countLines; i++) {
+    if (!isRowExist(id, DATABASE_FILE))
+    {
+        printf(" -- ID #%d don\'exist! -- ", id);
+        return;
+    }
 
-    //     for(int j = 0; array[i][j] != '\n'; j++) {
-    //         record[recordcount++] = array[i][j];
-    //     }
-    //     record[recordcount++] = '\0';
+    if (!isRowExist(id, DATABASE_FILE))
+    {
+        printf(" -- Wrong ID -- ");
+        return;
+    }
 
-    //     structCounter++;
+    char currentRowRecord[MAX_RECORD_LEN];
+    getRowByIDIfExist(id, DATABASE_FILE, currentRowRecord);
+    char currentRowCopy[MAX_RECORD_LEN];
+    strcpy(currentRowCopy, currentRowRecord);
 
-    //     recordcount = 0;
-    // }
+    strcat(currentRowRecord, ",");
 
-    // fclose(fp);
-    // fclose(fTemp);
+    int structCount = sizeof(bugReport) / sizeof(char *); // We get bytes of bugReport structure and divison by char *, because we have only char* in
 
+    char **explodeCurrentRecord = (char **)calloc(structCount, sizeof(char *));
+
+    int lengthCurrentRow = strlen(currentRowRecord);
+
+    char buffer[DESC_LENGTH];
+
+    int countStrings = 0;
+    int countChars = 0;
+
+    for (int i = 0; i < lengthCurrentRow; i++)
+    {
+        if (currentRowRecord[i] != ',')
+        {
+            buffer[countChars++] = currentRowRecord[i];
+        }
+        else if (currentRowRecord[i] == ',')
+        {
+            buffer[countChars] = '\0';
+            countChars = 0;
+            explodeCurrentRecord[countStrings] = (char *)calloc((strlen(buffer) + 1), sizeof(char));
+            strcpy(explodeCurrentRecord[countStrings], buffer);
+            memset(buffer, '\0', strlen(buffer));
+            countStrings++;
+        }
+    }
+
+    newReport.statusOfReport = explodeCurrentRecord[7];
+
+    printf(" --- %s ", currentRowCopy);
+
+    if (!isReportFixed(newReport.statusOfReport))
+    {
+        printf(" --- Record is not \"Fixed\". You can\'t change it. --- ");
+        free2DArrFromMemory(explodeCurrentRecord, structCount);
+        return;
+    }
+
+    printf(" --- ID #%d is FIXED. --- ", id);
+    printNewLines(1);
+    printf(" -- Do you want to change Report #%d to CLOSED? [y/n]: ", id);
+
+    if (!isContinue())
+    {
+        printf(" --- The BUG REPORT is not CLOSED! --- ");
+        free2DArrFromMemory(explodeCurrentRecord, structCount);
+        return;
+    }
+
+    char currDate[DATE_LENGTH];
+    getCurrentTime(currDate);
+    strcpy(explodeCurrentRecord[5], currDate);
+    strcpy(explodeCurrentRecord[6], "TESTER"); // 7 newReport.lastWriteInReport =
+    strcpy(explodeCurrentRecord[7], "CLOSED"); // 8 newReport.statusOfReport =
+    char newRow[MAX_RECORD_LEN];
+    sprintf(newRow, "%s,%s,%s,%s,%s,%s,%s,%s\n", explodeCurrentRecord[0], explodeCurrentRecord[1], explodeCurrentRecord[2], explodeCurrentRecord[3], explodeCurrentRecord[4], explodeCurrentRecord[5], explodeCurrentRecord[6], explodeCurrentRecord[7]);
+    clearScreen();
+    printCover();
+    printNewLines(1);
+    printLoggedAsTester();
+    printNewLines(2);
+    if (rewriteFileWithOneRow(REPLACE_FILE, DATABASE_FILE, currentRowCopy, newRow))
+    {
+        printf(" --- YOU FIX THE REPORT (#BUG) :  %s", newRow);
+    }
+    else if (!rewriteFileWithOneRow(REPLACE_FILE, DATABASE_FILE, currentRowCopy, newRow))
+    {
+        printf(" --- Error! ---");
+    }
+
+    free2DArrFromMemory(explodeCurrentRecord, structCount);
+
+    return;
 }
