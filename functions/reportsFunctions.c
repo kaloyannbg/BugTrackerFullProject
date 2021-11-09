@@ -26,10 +26,9 @@ void printAllReports()
     char *fgetsFile = fgets(buffer, MAX_RECORD_LEN, fp);
     char miniBuffer[20]; // buffer with spaces
     int miniBufferCounter = 0, i = 0, j = 0;
-    int countRows = 0;
+    int maxSpaces = 6;
     while (fgetsFile != NULL)
     {
-        countRows++;
         for (int i = 0; i < strlen(buffer); i++)
         {
             if (buffer[i] == ',')
@@ -49,10 +48,9 @@ void printAllReports()
                     }
                     miniBuffer[miniBufferCounter] = '\0';
                     printf("%s ", miniBuffer);
-                    if (strlen(miniBuffer) < 3)
-                    {
-                        printf(" ");
-                    } 
+                    for(int k = 0; k < (maxSpaces-strlen(miniBuffer)); k++ ) {
+                        putchar(' ');
+                    }
                 }
                 else if (i > strlen(miniBuffer))
                 {
