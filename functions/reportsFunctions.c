@@ -3,81 +3,35 @@
 #include <stdlib.h>
 #include "../main.h"
 
+enum StatusOfReport {NEW = 1, FIXED, CLOSED};
+
 typedef struct // WE DEFINE TYPE OF TYPE STRUCTURE
 {
-    char *uniqueID;          //     1. UNIQUE ID NUMBER
+    unsigned long long int uniqueID;          //     1. UNIQUE ID NUMBER
     char *sShortDesc;        //     2. SHORT DESCRIPTION
-    char *sDesc;             //     3. DESCRIPTION
-    char *sDateOfCreation;   //     4. DATE OF CREATION(current date)
-    char *sDateOfFixed;      //     5. DATE OF FIXED = 0 HERE
-    char *sDateOfClosed;     //     6. DATE OF CLOSED = 0 HERE
+    char *sDesc;     //     3. DESCRIPTION
+    time_t *sDateOfCreation;   //     4. DATE OF CREATION(current date)
+    time_t *sDateOfFixed;      //     5. DATE OF FIXED = 0 HERE
+    time_t *sDateOfClosed;     //     6. DATE OF CLOSED = 0 HERE
     char *lastWriteInReport; //     7. LAST WRITER IN REPORT : TESTER OR PROGRAMMER
-    char *statusOfReport;    //     8. STATUS : NEW | FIXED | CLOSED
+    enum StatusOfReport statusOfReport;    //     8. STATUS : NEW | FIXED | CLOSED
 
 } bugReport; // AND GIVE NAME HIM BUG REPORT
 
 bugReport newReport;
-
-void printAllReports()
-{
-    createFileIfNotExist(DATABASE_FILE);
-    fp = fopen(DATABASE_FILE, "r");
-    char buffer[MAX_RECORD_LEN];
-    char *fgetsFile = fgets(buffer, MAX_RECORD_LEN, fp);
-    char miniBuffer[20]; // buffer with spaces
-    int miniBufferCounter = 0, i = 0, j = 0;
-    int maxSpaces = 6;
-    while (fgetsFile != NULL)
-    {
-        for (int i = 0; i < strlen(buffer); i++)
-        {
-            if (buffer[i] == ',')
-            {
-                if (miniBufferCounter > 0)
-                {
-                }
-                printf(" | ");
-            }
-            else if (buffer[i] != ',')
-            {
-                if (buffer[i] == '#' && i == 0)
-                {
-                    for (j = 0; buffer[j] != ','; j++)
-                    {
-                        miniBuffer[miniBufferCounter++] = buffer[j];
-                    }
-                    miniBuffer[miniBufferCounter] = '\0';
-                    printf("%s ", miniBuffer);
-                    for(int k = 0; k < (maxSpaces-strlen(miniBuffer)); k++ ) {
-                        putchar(' ');
-                    }
-                }
-                else if (i > strlen(miniBuffer))
-                {
-                    printf("%c", buffer[i]);
-                }
-            }
-        }
-        fgetsFile = fgets(buffer, MAX_RECORD_LEN, fp);
-        miniBufferCounter = 0;
-    }
-
-    fclose(fp);
-}
 
 void createNewReport()
 {
     createFileIfNotExist(DATABASE_FILE);
 
     clearScreen();
-    printCover();
-    printLoggedAsTester();
+    printCover('T');
     printNewLines(1);
     newReport.sShortDesc = calloc(SHORT_DESC_LENGTH, sizeof(char));
     printf(" --- Enter text for short description. REPORT ID#%d ", countFileRows(DATABASE_FILE) + 1);
     getSentence(newReport.sShortDesc, 4, SHORT_DESC_LENGTH);
     printNewLines(1);
-    if (strlen(newReport.sShortDesc) < 4)
+    if (strlen(newReport.sShortDesc) < 4 || strlen(newReport.sShortDesc) > SHORT_DESC_LENGTH)
     {
         printf(" --- Log in as tester and try again! ---");
         return;
@@ -87,7 +41,7 @@ void createNewReport()
     printf(" --- Enter text for description. --- ");
     getSentence(newReport.sDesc, 10, DESC_LENGTH);
     printNewLines(1);
-    if (strlen(newReport.sDesc) < 10)
+    if (strlen(newReport.sDesc) < 10 || strlen(newReport.sDesc) > DESC_LENGTH)
     {
         printf(" --- Log in as tester and try again! ---");
         return;
@@ -126,7 +80,6 @@ void createNewReport()
     free(newReport.lastWriteInReport);
     free(newReport.statusOfReport);
     free(arrayPutInFile);
-
 }
 
 int isReportNew(char *status)
@@ -157,7 +110,7 @@ void editSpecificNewReport()
     char getID[20] = {0};
 
     printf(" -- Enter id TO FIX #: ");
-    scanf("%s", getID);
+    getStrFromAdress(getID);
 
     int id = atoi(getID);
 
@@ -221,24 +174,25 @@ void editSpecificNewReport()
     {
         printf(" --- The BUG REPORT is not FIXED! --- ");
         free2DArrFromMemory(explodeCurrentRecord, structCount);
+        makePause();
         return;
     }
 
     char currDate[DATE_LENGTH];
     getCurrentTime(currDate);
     strcpy(explodeCurrentRecord[4], currDate);
-    strcpy(explodeCurrentRecord[6], "PROGRAMMER"); // 7 newReport.lastWriteInReport =
-    strcpy(explodeCurrentRecord[7], "FIXED");      // 8 newReport.statusOfReport =
+    strcpy(explodeCurrentRecord[6], "PROGRAMMER"); // 7 newReport.lastWriteInReport
+    strcpy(explodeCurrentRecord[7], "FIXED");      // 8 newReport.statusOfReport
     char newRow[MAX_RECORD_LEN];
     sprintf(newRow, "%s,%s,%s,%s,%s,%s,%s,%s\n", explodeCurrentRecord[0], explodeCurrentRecord[1], explodeCurrentRecord[2], explodeCurrentRecord[3], explodeCurrentRecord[4], explodeCurrentRecord[5], explodeCurrentRecord[6], explodeCurrentRecord[7]);
     clearScreen();
-    printCover();
-    printNewLines(1);
-    printLoggedAsProgrammer();
+    printCover('P');
     printNewLines(2);
     if (rewriteFileWithOneRow(REPLACE_FILE, DATABASE_FILE, currentRowCopy, newRow))
     {
-        printf(" --- YOU FIX THE REPORT (#BUG) :  %s", newRow);
+        printf(" --- YOU FIX THE REPORT (#BUG) --- ");
+        printNewLines(2);
+        parsePrintArray(newRow, strlen(newRow));
     }
     else if (!rewriteFileWithOneRow(REPLACE_FILE, DATABASE_FILE, currentRowCopy, newRow))
     {
@@ -257,7 +211,7 @@ void verifyFixedReport()
     char getID[20] = {0};
 
     printf(" -- Enter id TO VERIFY #: ");
-    scanf("%s", getID);
+    getStrFromAdress(getID);
 
     int id = atoi(getID);
 
@@ -338,13 +292,13 @@ void verifyFixedReport()
     char newRow[MAX_RECORD_LEN];
     sprintf(newRow, "%s,%s,%s,%s,%s,%s,%s,%s\n", explodeCurrentRecord[0], explodeCurrentRecord[1], explodeCurrentRecord[2], explodeCurrentRecord[3], explodeCurrentRecord[4], explodeCurrentRecord[5], explodeCurrentRecord[6], explodeCurrentRecord[7]);
     clearScreen();
-    printCover();
-    printNewLines(1);
-    printLoggedAsTester();
+    printCover('T');
     printNewLines(2);
     if (rewriteFileWithOneRow(REPLACE_FILE, DATABASE_FILE, currentRowCopy, newRow))
     {
-        printf(" --- YOU FIX THE REPORT (#BUG) :  %s", newRow);
+        printf(" --- YOU VERIFIED THE REPORT (#BUG) --- ");
+        printNewLines(2);
+        parsePrintArray(newRow, strlen(newRow));
     }
     else if (!rewriteFileWithOneRow(REPLACE_FILE, DATABASE_FILE, currentRowCopy, newRow))
     {
@@ -354,4 +308,45 @@ void verifyFixedReport()
     free2DArrFromMemory(explodeCurrentRecord, structCount);
 
     return;
+}
+
+void printReports(char flag)
+{
+    fp = fopen(DATABASE_FILE, "r");
+
+    char *buffer = malloc(MAX_RECORD_LEN);
+
+    char *fgetsFile = fgets(buffer, MAX_RECORD_LEN, fp);
+
+    int countChars = 0;
+
+    while (fgetsFile != NULL)
+    {
+        countChars = 0;
+        for (int i = strlen(buffer) - 2; buffer[i] != ','; i--) // Str len - \n (2 chars) in that string
+        {
+            countChars++;
+        }
+        if (flag == 'a' || flag == 'A')
+        {
+            parsePrintArray(buffer, strlen(buffer));
+        }
+        else if (countChars == 3 && (flag == 'n' || flag == 'N'))
+        {
+            parsePrintArray(buffer, strlen(buffer));
+        }
+        else if (countChars == 5 && (flag == 'f' || flag == 'F'))
+        {
+            parsePrintArray(buffer, strlen(buffer));
+        }
+        else if (countChars == 6 && (flag == 'c' || flag == 'C'))
+        {
+            parsePrintArray(buffer, strlen(buffer));
+        }
+
+        fgetsFile = fgets(buffer, MAX_RECORD_LEN, fp);
+    }
+
+    free(buffer);
+    fclose(fp);
 }
