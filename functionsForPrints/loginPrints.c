@@ -11,12 +11,26 @@ void printLoginChoice()
     printNewLines(2);
 }
 
-void printLoggedAsTester()
+void printLoggedAs(char flag)
 {
-    printf(" -- You are logged as: Tester -- ");
+    if (flag == 'p' || flag == 'P')
+    {
+        printf(" *          You are logged as PROGRAMMER          *");
+    }
+    else if (flag == 't' || flag == 'T')
+    {
+        printf(" *            You are logged as TESTER            *");
+    }
 }
 
-void printLoggedAsProgrammer()
+void printLoginContinue(char flag)
 {
-    printf(" -- You are logged as: Programmer -- ");
+    if (flag == 'p' || flag == 'P')
+    {
+        printf(" ---- Do you want to stay logged as: PROGRAMMER ? [y/n]: ");
+    }
+    else if (flag == 't' || flag == 'T')
+    {
+        printf(" ---- Do you want to stay logged as: TESTER ? [y/n]: ");
+    }
 }
