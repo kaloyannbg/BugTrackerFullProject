@@ -118,11 +118,42 @@ void printParsedArr(char *arr, int size)
     }
 }
 
-void printDateFromTimestamp(int timestamp)
+void printDateFromTimestamp(time_t timestamp)
 {
     time_t t = timestamp;
     struct tm tm = *localtime(&t);
-    printf("%d-%d-%d %d:%d:%d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+    if (tm.tm_sec <= 9)
+    {
+        printf("%d-%d-%d %d:%d:0%d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+    }
+    else if (tm.tm_min <= 9)
+    {
+        printf("%d-%d-%d %d:0%d:%d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+    }
+    else if (tm.tm_hour <= 9)
+    {
+        printf("%d-%d-%d 0%d:%d:%d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+    }
+    else if (tm.tm_sec <= 9 && tm.tm_min <= 9)
+    {
+        printf("%d-%d-%d %d:0%d:0%d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+    }
+    else if (tm.tm_hour <= 9 && tm.tm_sec <= 9)
+    {
+        printf("%d-%d-%d 0%d:%d:0%d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+    }
+    else if (tm.tm_hour <= 9 && tm.tm_min <= 9)
+    {
+        printf("%d-%d-%d 0%d:0%d:%d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+    }
+    else if (tm.tm_hour <= 9 && tm.tm_sec <= 9 && tm.tm_min <= 9)
+    {
+        printf("%d-%d-%d 0%d:0%d:0%d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+    }
+    else
+    {
+        printf("%d-%d-%d %d:%d:%d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+    }
 }
 
 void printParsedStruct(bugReport *report)
