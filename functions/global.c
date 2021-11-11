@@ -3,6 +3,11 @@
 #include <stdlib.h>
 #include "../main.h"
 
+char charToInt(char c)
+{
+    return (int)c - 48;
+}
+
 void getInt(int *var)
 {
     scanf("%d", var);
