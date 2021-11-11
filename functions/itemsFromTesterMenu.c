@@ -3,25 +3,41 @@
 #include <stdlib.h>
 #include "../main.h"
 
-void itemsFromTesterMenu(char c)
+void itemsFromProgrammerMenu(char c)
 {
     switch (c)
     {
     case '1':
-        printf(" -- CHECK ALL REPORTS. (#BUGS) --");
+        printf(" -- FIX SPECIFIC NEW REPORT (#BUG). --");
         printNewLines(1);
-        printAllReports();
+        fixReport();
         break;
     case '2':
-        printf(" -- CREATE NEW REPORT. (#BUG). --");
+        printf(" -- CHECK ALL REPORTS (#BUGS) --");
         printNewLines(1);
-        createNewReport();
+        printReports('A', &newReport);
         break;
     case '3':
+        printf(" --  CHECK ALL REPORTS WITH STATUS NEW.(#NEW BUGS) --");
+        printNewLines(1);
+        printReports('N', &newReport);
+        break;
+    case '4':
+        printf(" --  CHECK ALL REPORTS WITH STATUS FIXED.(#FIXED BUGS) --");
+        printNewLines(1);
+        printReports('F', &newReport);
+        break;
+    case '5':
+        printf(" --  CHECK ALL REPORTS WITH STATUS CLOSED.(#CLOSED BUGS) --");
+        printNewLines(1);
+        printReports('C', &newReport);
+        break;
+    case '6':
         printf(" -- CHECK SPECIFIC REPORT (#BUG).  --");
         break;
 
-    default: (" -- You choosed invalid item from tester menu. ");
+    default:
+        (" -- You choosed invalid item from programmer menu. ");
         break;
     }
 }
