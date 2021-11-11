@@ -1,0 +1,19 @@
+#define IDS_LENGTH 32
+#define SHORT_DESC_LENGTH 128
+#define DESC_LENGTH 1024
+#define DATE_LENGTH 128
+#define WRITER_LENGTH 16
+#define STATUS_LENGTH 8
+#define MAX_RECORD_LEN 2048
+#define STRUCT_COUNT 8
+#define DATABASE_FILE "DB.csv"
+#define REPLACE_FILE "replace.csv"
+
+#define UNIQUE_ID_POS 0
+#define SHORT_DESC_POS 1
+#define DESC_POS 2
+#define DATE_CREATION_POS 3
+#define DATE_FIXED_POS 4
+#define DATE_CLOSED_POS 5
+#define LAST_WRITER_POS 6
+#define STATUS_REPORT_POS 7

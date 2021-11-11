@@ -1,19 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "files/structFile.c"
-#ifndef TEST
-#define TEST
-#define IDS_LENGTH 32
-#define SHORT_DESC_LENGTH 128
-#define DESC_LENGTH 1024
-#define DATE_LENGTH 128
-#define WRITER_LENGTH 16
-#define STATUS_LENGTH 8
-#define MAX_RECORD_LEN 2048
-#define STRUCT_COUNT 8
-// char DATABASE_FILE[] = "DB.csv";
-#define DATABASE_FILE "DB.csv"
-#define REPLACE_FILE "replace.csv"
+#include "files/defineFile.c"
 
 
 FILE *fp;
@@ -84,4 +72,3 @@ char getCurrentTime(char *out); // save current time in 'out' array
 // START [FUNCTIONS/login.c]
 int isSessionContinue(char *charAdress);
 // END [FUNCTIONS/login.c]
-#endif

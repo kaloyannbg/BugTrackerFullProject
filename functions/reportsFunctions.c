@@ -110,13 +110,13 @@ void getExistingReport(int id, char *buffer)
     newReport.lastWriteInReport = (char *)malloc(WRITER_LENGTH);
 
     newReport.uniqueID = id;
-    strcpy(newReport.sShortDesc, explodeCurrentRecord[1]);
-    strcpy(newReport.sDesc, explodeCurrentRecord[2]);
-    newReport.sDateOfCreation = atoi(explodeCurrentRecord[3]);
-    newReport.sDateOfFixed = atoi(explodeCurrentRecord[4]);
-    newReport.sDateOfClosed = atoi(explodeCurrentRecord[5]);
-    strcpy(newReport.lastWriteInReport, explodeCurrentRecord[6]);
-    newReport.statusOfReport = atoi(explodeCurrentRecord[7]);
+    strcpy(newReport.sShortDesc, explodeCurrentRecord[SHORT_DESC_POS]);
+    strcpy(newReport.sDesc, explodeCurrentRecord[DESC_POS]);
+    newReport.sDateOfCreation = atoi(explodeCurrentRecord[DATE_CREATION_POS]);
+    newReport.sDateOfFixed = atoi(explodeCurrentRecord[DATE_FIXED_POS]);
+    newReport.sDateOfClosed = atoi(explodeCurrentRecord[DATE_CLOSED_POS]);
+    strcpy(newReport.lastWriteInReport, explodeCurrentRecord[LAST_WRITER_POS]);
+    newReport.statusOfReport = atoi(explodeCurrentRecord[STATUS_REPORT_POS]);
 
     // free2DArrFromMemory(explodeCurrentRecord, MAX_RECORD_LEN);
 }
