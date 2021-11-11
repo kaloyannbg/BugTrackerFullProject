@@ -4,9 +4,8 @@
 #include "../main.h"
 
 //#define MAX_BUFFER_SIZE 100000
-FILE *fp;
 
-//char buffer[MAX_BUFFER_SIZE];
+// char buffer[MAX_BUFFER_SIZE];
 
 int isFileExist(char *fileName)
 {
@@ -34,32 +33,106 @@ void createFileIfNotExist(char *fileName)
 
 int countFileRows(char *fileName)
 {
-    int len = 0;
-     char *buffer = 0;
+    int count = 0;
+
+    char buffer[MAX_RECORD_LEN];
 
     fp = fopen(fileName, "r");
-    fseek(fp, 0, SEEK_END); // get bytes of file , 300 chars = 300 bytes
 
-    len = ftell(fp);        // COUNT BYTES FROM BEGGINING
-    fseek(fp, 0, SEEK_SET); // SET POINTER AT ZERO POSITION
+    char *fgetsFile = fgets(buffer, MAX_RECORD_LEN, fp);
 
-    len += 1; // ADD 1 CHAR FOR TERMINATION ZERO
-    buffer = (char *)malloc(len * sizeof(char)); // CREATE DYNAMIC BUFFER FOR CONTENT OF FILE
-    fread(buffer, sizeof(char), len - 1, fp); // SAVE ALL CONTENT FROM FILE AT BUFFER len-1 (because we save that space for \0)
-    buffer[len] = '\0';
-    fclose(fp);
-    int counter = 0, counterNewLines = 0;
-
-    while (counter < len)
+    while (fgetsFile != NULL)
     {
-        if (buffer[counter] == '\n')
+        count++;
+        fgetsFile = fgets(buffer, MAX_RECORD_LEN, fp);
+    }
+    fclose(fp);
+    return count;
+}
+
+int isRowExist(int row, char *fileName)
+{
+    fp = fopen(fileName, "r");
+    char buffer[MAX_RECORD_LEN];
+    int countRows = 1;
+    char *fgetsFile = fgets(buffer, MAX_RECORD_LEN, fp);
+    while (fgetsFile != NULL)
+    {
+        if (countRows == row)
         {
-            counterNewLines++;
+            fclose(fp);
+            return 1;
         }
-        counter++;
+        countRows++;
+        fgetsFile = fgets(buffer, MAX_RECORD_LEN, fp);
+    }
+    fclose(fp);
+    return 0;
+}
+
+void getRowByIDIfExist(int row, char *fileName, char *out)
+{
+
+    fp = fopen(fileName, "r");
+
+    char buffer[MAX_RECORD_LEN];
+
+    char *fgetsFile = fgets(buffer, MAX_RECORD_LEN, fp); // If an error occurs, a null pointer is returned.
+    int countRows = 1;
+    while (fgetsFile != NULL)
+    {
+        if (countRows == row)
+        {
+            strcpy(out, buffer);
+            fclose(fp);
+            return;
+        }
+        countRows++;
+        fgetsFile = fgets(buffer, MAX_RECORD_LEN, fp);
+    }
+    fclose(fp);
+}
+
+int rewriteFileWithOneRow(char *replaceFile, char *withFile, char *rowToReplace, char *newRow)
+{
+    char buffer[MAX_RECORD_LEN];
+    fTemp = fopen(replaceFile, "w");
+    fp = fopen(withFile, "r");
+    int count = 0;
+    fseek(fp, 0, SEEK_SET);
+    fseek(fTemp, 0, SEEK_SET);
+    fflush(stdin);
+
+    char *fileP = fgets(buffer, MAX_RECORD_LEN, fp);
+
+    while (fileP != NULL)
+    {
+        count++;
+        // If current line is line to replace
+        if (strcmp(buffer, rowToReplace) == 0)
+        {
+            fputs(newRow, fTemp);
+        }
+        else if (strcmp(buffer, rowToReplace) != 0)
+        {
+            fputs(buffer, fTemp);
+        }
+        memset(buffer, '\0', strlen(buffer));
+        fileP = fgets(buffer, MAX_RECORD_LEN, fp);
     }
 
-   // memset(buffer, 0, len);     // clear our buffer
-    free(buffer);
-    return counterNewLines; // +1 BECAUSE WE DONT COUNT NEWLINE BEFORE FIRST STRING
+    fclose(fp);
+    fclose(fTemp);
+
+    fflush(stdin);
+
+    if (remove(withFile) == 0)
+    {
+        remove(withFile);
+        rename(replaceFile, withFile);
+        return 1;
+    }
+
+    printf("%s , ", strerror(errno));
+    return 0;
 }
