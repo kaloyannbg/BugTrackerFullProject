@@ -77,9 +77,9 @@ void getExistingReport(int id, char *buffer)
 
     strcat(currentRowRecord, ",");
 
-    // char **explodeCurrentRecord = (char **)calloc(STRUCT_COUNT, sizeof(char));
+    char **explodeCurrentRecord = (char **)malloc(STRUCT_COUNT * sizeof(char*));
 
-    char explodeCurrentRecord[STRUCT_COUNT][DESC_LENGTH];
+    //char explodeCurrentRecord[STRUCT_COUNT][DESC_LENGTH];
 
     int lengthCurrentRow = strlen(currentRowRecord);
 
@@ -98,7 +98,7 @@ void getExistingReport(int id, char *buffer)
         {
             bufferTwo[countChars] = '\0';
             countChars = 0;
-            // explodeCurrentRecord[countStrings] = (char *)calloc((strlen(bufferTwo) + 1), sizeof(char));
+            explodeCurrentRecord[countStrings] = (char *)malloc( (strlen(bufferTwo) + 1) * sizeof(char) );
             strcpy(explodeCurrentRecord[countStrings], bufferTwo);
             memset(bufferTwo, '\0', strlen(bufferTwo));
             countStrings++;
@@ -118,7 +118,7 @@ void getExistingReport(int id, char *buffer)
     strcpy(newReport.lastWriteInReport, explodeCurrentRecord[LAST_WRITER_POS]);
     newReport.statusOfReport = atoi(explodeCurrentRecord[STATUS_REPORT_POS]);
 
-    // free2DArrFromMemory(explodeCurrentRecord, MAX_RECORD_LEN);
+    free2DArrFromMemory(explodeCurrentRecord, STRUCT_COUNT);
 }
 
 void fixReport()

@@ -118,12 +118,39 @@ void printParsedArr(char *arr, int size)
     }
 }
 
+void printDateFromTimestamp(int timestamp)
+{
+    time_t t = timestamp;
+    struct tm tm = *localtime(&t);
+    printf("%d-%d-%d %d:%d:%d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+}
+
 void printParsedStruct(bugReport *report)
 {
     printf(" --- %-5d | ", report->uniqueID);
     printParsedArr(report->sShortDesc, strlen(report->sShortDesc));
     printf(" | ");
     printParsedArr(report->sDesc, strlen(report->sDesc));
+    printf(" | ");
+    printDateFromTimestamp(report->sDateOfCreation);
+    printf(" | ");
+    if (report->sDateOfFixed == 0)
+    {
+        printf("NOT FIXED");
+    }
+    else
+    {
+        printDateFromTimestamp(report->sDateOfFixed);
+    }
+    printf(" | ");
+    if (report->sDateOfClosed == 0)
+    {
+        printf("NOT VERIFIED");
+    }
+    else
+    {
+        printDateFromTimestamp(report->sDateOfClosed);
+    }
     printf(" | ");
     printf("%s", report->lastWriteInReport);
     printf(" | ");
@@ -142,5 +169,3 @@ void printParsedStruct(bugReport *report)
     printf(" | ");
     putchar('\n');
 }
-
-
