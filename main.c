@@ -3,46 +3,82 @@
 #include <stdlib.h>
 #include <conio.h>
 #include "main.h"
+//#define DATABASE_FILE "DB.csv"
 
 int main(void)
 {
-    char cLoginChoice = 0, cTesterMenuChoice = 0; // [cLoginChoice 1 = programmer, 2 = tester]
-
+    system("color 0B");
+    char cLoginChoice = 0, cMenuChoice = 0, cChar = 0; // [cLoginChoice 1 = programmer, 2 = tester]
+    int isCont = 0;
     do
     {
         clearScreen();
-        printCover();
+        printCover('N');
         printLoginChoice();
-        char file[50] = "DB.csv";
-        countFileRows(file);
+        countFileRows(DATABASE_FILE);
         printf(" -- Please, enter your choice: ");
         getCharFromAdress(&cLoginChoice);
+        cChar = 0, isCont = 0;
         switch (cLoginChoice)
         {
         case '0':
             clearScreen();
-            printCover();
+            printCover('N');
             printf(" -- Bye, bye! --");
             exit(0);
             break;
         case '1':
-            clearScreen();
-            printCover();
-            printLoggedAsProgrammer();
-            printNewLines(2);
-            printProgrammerMenu();
+            do
+            {
+                clearScreen();
+                printCover('P');
+                printNewLines(2);
+                printProgrammerMenu();
+                printNewLines(2);
+                printf(" -- Please, enter your choice as PROGRAMMER: ");
+                getCharFromAdress(&cMenuChoice);
+                printNewLines(1);
+                itemsFromProgrammerMenu(cMenuChoice);
+                printNewLines(1);
+                printLoginContinue('P');
+                getCharFromAdress(&cChar);
+                isCont = isSessionContinue(&cChar);
+                while (isCont == -1)
+                {
+                    clearScreen();
+                    printCover('P');
+                    printLoginContinue('P');
+                    getCharFromAdress(&cChar);
+                    isCont = isSessionContinue(&cChar);
+                }
+            } while (isCont != 0);
+
             break;
         case '2':
-            clearScreen();
-            printCover();
-            printLoggedAsTester();
-            printNewLines(2);
-            printTesterMenu();
-            printNewLines(2);
-            printf(" -- Please, enter your choice as tester: ");
-            getCharFromAdress(&cTesterMenuChoice);
-            printNewLines(1);
-            itemsFromTesterMenu(cTesterMenuChoice);
+            do
+            {
+                clearScreen();
+                printCover('T');
+                printNewLines(2);
+                printTesterMenu();
+                printNewLines(2);
+                printf(" -- Please, enter your choice as TESTER: ");
+                getCharFromAdress(&cMenuChoice);
+                printNewLines(1);
+                itemsFromTesterMenu(cMenuChoice);
+                printNewLines(1);
+                printLoginContinue('T');
+                getCharFromAdress(&cChar);
+                isCont = isSessionContinue(&cChar);
+                while (isCont == -1)
+                {
+                    clearScreen();
+                    printCover('T');
+                    printLoginContinue('T');
+                    getCharFromAdress(&cChar);
+                    isCont = isSessionContinue(&cChar);
+                }
+            } while (isCont != 0);
             break;
         default:
             printf(" -- Invalid choice. Please try again! -- ");
@@ -50,7 +86,6 @@ int main(void)
         }
 
         printNewLines(2);
-        makePause();
     } while (cLoginChoice != '0');
 
     return 0;
