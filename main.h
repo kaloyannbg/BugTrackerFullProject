@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "files/structFile.c"
-#include "files/defineFile.c"
+#include "headers/defineFile.h"
+#include "headers/structFile.h"
 
 
 FILE *fp;

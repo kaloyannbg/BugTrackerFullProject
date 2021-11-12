@@ -79,8 +79,6 @@ void getExistingReport(int id, char *buffer)
 
     char **explodeCurrentRecord = (char **)malloc(STRUCT_COUNT * sizeof(char*));
 
-    //char explodeCurrentRecord[STRUCT_COUNT][DESC_LENGTH];
-
     int lengthCurrentRow = strlen(currentRowRecord);
 
     char bufferTwo[DESC_LENGTH];
