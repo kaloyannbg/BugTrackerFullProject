@@ -3,10 +3,6 @@
 #include <stdlib.h>
 #include "../main.h"
 
-//#define MAX_BUFFER_SIZE 100000
-
-// char buffer[MAX_BUFFER_SIZE];
-
 int isFileExist(char *fileName)
 {
     fp = fopen(fileName, "r");
@@ -93,7 +89,7 @@ void getRowByIDIfExist(int row, char *fileName, char *out)
     fclose(fp);
 }
 
-int rewriteFileWithOneRow(char *replaceFile, char *withFile, char *rowToReplace, char *newRow)
+int changeRow(char *replaceFile, char *withFile, char *rowToReplace, char *newRow)
 {
     char buffer[MAX_RECORD_LEN];
     fTemp = fopen(replaceFile, "w");

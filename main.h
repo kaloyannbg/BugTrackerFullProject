@@ -38,9 +38,9 @@ int isContinue();
 void itemsFromTesterMenu(char c);
 void createNewReport();
 void verifyReport();
+void checkReport();
 void getShortDesc(char *sShortDesc);
 void getDesc(char *sDesc);
-
 void itemsFromProgrammerMenu(char c);
 void fixReport();
 // END [FUNCTIONS/ItemsFromTesterMenu.c]
@@ -56,7 +56,7 @@ void createFileIfNotExist(char *fileName);
 int countFileRows(char *fileName);
 int isRowExist(int row, char *fileName);
 void getRowByIDIfExist(int row, char *fileName, char *out);
-int rewriteFileWithOneRow(char *replaceFile, char *withFile, char *rowToReplace, char *newRow);
+int changeRow(char *replaceFile, char *withFile, char *rowToReplace, char *newRow);
 // END [FUNCTIONS/fileFunctions.c]
 
 // START [FUNCTIONS/stringFunctions.c]

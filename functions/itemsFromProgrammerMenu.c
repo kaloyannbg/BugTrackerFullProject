@@ -34,6 +34,8 @@ void itemsFromProgrammerMenu(char c)
         break;
     case '6':
         printf(" -- CHECK SPECIFIC REPORT (#BUG).  --");
+        printNewLines(1);
+        checkReport();
         break;
 
     default:

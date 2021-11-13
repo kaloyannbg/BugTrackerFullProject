@@ -69,54 +69,73 @@ int isReportFixed(int statusOfReport)
     return 0;
 }
 
-void getExistingReport(int id, char *buffer)
+void putReportInStruct(char *buffer)
 {
-    char currentRowRecord[MAX_RECORD_LEN];
-
-    strcpy(currentRowRecord, buffer);
-
-    strcat(currentRowRecord, ",");
-
-    char **explodeCurrentRecord = (char **)malloc(STRUCT_COUNT * sizeof(char*));
-
-    int lengthCurrentRow = strlen(currentRowRecord);
-
-    char bufferTwo[DESC_LENGTH];
-
-    int countStrings = 0;
-    int countChars = 0;
-
-    for (int i = 0; i < lengthCurrentRow; i++)
-    {
-        if (currentRowRecord[i] != ',')
-        {
-            bufferTwo[countChars++] = currentRowRecord[i];
-        }
-        else if (currentRowRecord[i] == ',')
-        {
-            bufferTwo[countChars] = '\0';
-            countChars = 0;
-            explodeCurrentRecord[countStrings] = (char *)malloc( (strlen(bufferTwo) + 1) * sizeof(char) );
-            strcpy(explodeCurrentRecord[countStrings], bufferTwo);
-            memset(bufferTwo, '\0', strlen(bufferTwo));
-            countStrings++;
-        }
-    }
-
+    char *dynBuffer = (char *)malloc(strlen(buffer) + 1);
+    strcpy(dynBuffer, buffer);
     newReport.sShortDesc = (char *)malloc(SHORT_DESC_LENGTH);
     newReport.sDesc = (char *)malloc(DESC_LENGTH);
     newReport.lastWriteInReport = (char *)malloc(WRITER_LENGTH);
 
-    newReport.uniqueID = id;
-    strcpy(newReport.sShortDesc, explodeCurrentRecord[SHORT_DESC_POS]);
-    strcpy(newReport.sDesc, explodeCurrentRecord[DESC_POS]);
-    newReport.sDateOfCreation = atoi(explodeCurrentRecord[DATE_CREATION_POS]);
-    newReport.sDateOfFixed = atoi(explodeCurrentRecord[DATE_FIXED_POS]);
-    newReport.sDateOfClosed = atoi(explodeCurrentRecord[DATE_CLOSED_POS]);
-    strcpy(newReport.lastWriteInReport, explodeCurrentRecord[LAST_WRITER_POS]);
-    newReport.statusOfReport = atoi(explodeCurrentRecord[STATUS_REPORT_POS]);
+    int countStr = 0;
+    char *token = strtok(dynBuffer, ",");
+    while (token != NULL)
+    {
+        switch (countStr)
+        {
+        case UNIQUE_ID_POS:
+            newReport.uniqueID = atoi(token);
+            break;
+        case SHORT_DESC_POS:
+            strcpy(newReport.sShortDesc, token);
+            break;
+        case DESC_POS:
+            strcpy(newReport.sDesc, token);
+            break;
+        case DATE_CREATION_POS:
+            newReport.sDateOfCreation = atoi(token);
+            break;
+        case DATE_FIXED_POS:
+            newReport.sDateOfFixed = atoi(token);
+            break;
+        case DATE_CLOSED_POS:
+            newReport.sDateOfClosed = atoi(token);
+            break;
+        case LAST_WRITER_POS:
+            strcpy(newReport.lastWriteInReport, token);
+            break;
+        case STATUS_REPORT_POS:
+            newReport.statusOfReport = atoi(token);
+        default:
+            break;
+        }
+        token = strtok(NULL, ",");
+        countStr++;
+    }
+    free(dynBuffer);
+}
 
-    free2DArrFromMemory(explodeCurrentRecord, STRUCT_COUNT);
+void checkReport()
+{
+
+    createFileIfNotExist(DATABASE_FILE);
+
+    char getID[20] = {0};
+
+    printf(" -- Enter id TO CHECK #: ");
+    getStrFromAdress(getID);
+
+    int id = atoi(getID);
+
+    if (!isRowExist(id, DATABASE_FILE))
+    {
+        printf(" -- Report with ID %d do not exist~ -- ", id);
+        return;
+    }
+    char currentRow[MAX_RECORD_LEN] = {0};
+    getRowByIDIfExist(id, DATABASE_FILE, currentRow);
+    putReportInStruct(currentRow);
+    printParsedStruct(&newReport);
 }
 
 void fixReport()
@@ -136,11 +155,9 @@ void fixReport()
         return;
     }
 
-    char currentRowCopy[MAX_RECORD_LEN] = {0};
     char currentRow[MAX_RECORD_LEN] = {0};
-    getRowByIDIfExist(id, DATABASE_FILE, currentRowCopy);
     getRowByIDIfExist(id, DATABASE_FILE, currentRow);
-    getExistingReport(id, currentRow);
+    putReportInStruct(currentRow);
 
     if (isReportNew(newReport.statusOfReport) != 1)
     {
@@ -169,13 +186,13 @@ void fixReport()
     clearScreen();
     printCover('P');
     printNewLines(2);
-    if (rewriteFileWithOneRow(REPLACE_FILE, DATABASE_FILE, currentRowCopy, newRow))
+    if (changeRow(REPLACE_FILE, DATABASE_FILE, currentRow, newRow))
     {
         printf(" --- YOU FIX THE REPORT (#BUG) --- ");
         printNewLines(2);
         printParsedStruct(&newReport);
     }
-    else if (!rewriteFileWithOneRow(REPLACE_FILE, DATABASE_FILE, currentRowCopy, newRow))
+    else if (!changeRow(REPLACE_FILE, DATABASE_FILE, currentRow, newRow))
     {
         printf(" --- Error! ---");
     }
@@ -201,11 +218,9 @@ void verifyReport()
         return;
     }
 
-    char currentRowCopy[MAX_RECORD_LEN] = {0};
     char currentRow[MAX_RECORD_LEN] = {0};
-    getRowByIDIfExist(id, DATABASE_FILE, currentRowCopy);
     getRowByIDIfExist(id, DATABASE_FILE, currentRow);
-    getExistingReport(id, currentRow);
+    putReportInStruct(currentRow);
 
     if (isReportFixed(newReport.statusOfReport) != 1)
     {
@@ -234,13 +249,13 @@ void verifyReport()
     clearScreen();
     printCover('P');
     printNewLines(2);
-    if (rewriteFileWithOneRow(REPLACE_FILE, DATABASE_FILE, currentRowCopy, newRow))
+    if (changeRow(REPLACE_FILE, DATABASE_FILE, currentRow, newRow))
     {
         printf(" --- YOU VERIFIED (CLOSED) THE REPORT (#BUG) --- ");
         printNewLines(2);
         printParsedStruct(&newReport);
     }
-    else if (!rewriteFileWithOneRow(REPLACE_FILE, DATABASE_FILE, currentRowCopy, newRow))
+    else if (!changeRow(REPLACE_FILE, DATABASE_FILE, currentRow, newRow))
     {
         printf(" --- Error! ---");
     }
@@ -253,11 +268,9 @@ void printReports(char flag, bugReport *report)
     fp = fopen(DATABASE_FILE, "r");
     char buffer[MAX_RECORD_LEN] = {0};
     char *fgetsFile = fgets(buffer, MAX_RECORD_LEN, fp);
-    int idCount = 0;
     while (fgetsFile != NULL)
     {
-        idCount++;
-        getExistingReport(idCount, buffer);
+        putReportInStruct(buffer);
         if (flag == 'a' || flag == 'A')
         {
             printParsedStruct(&newReport);

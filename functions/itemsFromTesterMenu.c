@@ -39,6 +39,8 @@ void itemsFromTesterMenu(char c)
         break;
     case '7':
         printf(" -- CHECK SPECIFIC REPORT (#BUG).  --");
+        printNewLines(1);
+        checkReport();
         break;
     default:
         (" -- You choosed invalid item from tester menu. ");
