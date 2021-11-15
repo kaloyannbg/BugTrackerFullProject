@@ -3,41 +3,44 @@
 #include <stdlib.h>
 #include "../main.h"
 
-void printCover(char flag)
+void printCover(enUserType flag)
 {
-    char DBFile[7] = "DB.csv";
     printf(" ************************************************** ");
-    printNewLines(1);
+    printNewLines(oneLine);
     printf(" *                                                * ");
-    printNewLines(1);
+    printNewLines(oneLine);
     printf(" *             Project: Bug tracker               * ");
-    printNewLines(1);
+    printNewLines(oneLine);
     printf(" *        Project Choice: Ivan Fildishev          * ");
-    printNewLines(1);
+    printNewLines(oneLine);
     printf(" *            Author: Kaloyan Angelov             * ");
-    printNewLines(1);
+    printNewLines(oneLine);
     printf(" *            START DATE: 03.11.2021              * ");
-    printNewLines(1);
+    printNewLines(oneLine);
     printf(" *                                                * ");
-    printNewLines(1);
+    printNewLines(oneLine);
     printf(" ************************************************** ");
-    printNewLines(2);
+    printNewLines(twoLines);
     printf(" ************************************************** ");
-    printNewLines(1);
-    if (flag == 'p' || flag == 'P')
+    printNewLines(oneLine);
+    if (flag == PROGRAMMER)
     {
-        printLoggedAs(flag);
+        printLoggedAs(PROGRAMMER);
+        printNewLines(oneLine);
+        printf(" *\t    Your nickname: %s                 *", regInstance.user);
     }
-    else if (flag == 't' || flag == 'T')
+    else if (flag == TESTER)
     {
-        printLoggedAs(flag);
+        printLoggedAs(TESTER);
+        printNewLines(oneLine);
+        printf(" *\t    Your nickname: %s                 *", regInstance.user);
     }
-    else
+    else if(flag == GUEST)
     {
         printf(" *               You are not logged.              *");
     }
 
-    printNewLines(1);
+    printNewLines(oneLine);
     printf(" ************************************************** ");
-    printNewLines(2);
+    printNewLines(oneLine);
 }

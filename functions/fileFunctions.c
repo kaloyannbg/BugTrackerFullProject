@@ -31,7 +31,7 @@ int countFileRows(char *fileName)
 {
     int count = 0;
 
-    char buffer[MAX_RECORD_LEN];
+    char buffer[MAX_RECORD_LEN] = { 0 };
 
     fp = fopen(fileName, "r");
 
@@ -49,7 +49,7 @@ int countFileRows(char *fileName)
 int isRowExist(int row, char *fileName)
 {
     fp = fopen(fileName, "r");
-    char buffer[MAX_RECORD_LEN];
+    char buffer[MAX_RECORD_LEN] = { 0 };
     int countRows = 1;
     char *fgetsFile = fgets(buffer, MAX_RECORD_LEN, fp);
     while (fgetsFile != NULL)
@@ -71,7 +71,7 @@ void getRowByIDIfExist(int row, char *fileName, char *out)
 
     fp = fopen(fileName, "r");
 
-    char buffer[MAX_RECORD_LEN];
+    char buffer[MAX_RECORD_LEN] = { 0 };
 
     char *fgetsFile = fgets(buffer, MAX_RECORD_LEN, fp); // If an error occurs, a null pointer is returned.
     int countRows = 1;
@@ -91,7 +91,7 @@ void getRowByIDIfExist(int row, char *fileName, char *out)
 
 int changeRow(char *replaceFile, char *withFile, char *rowToReplace, char *newRow)
 {
-    char buffer[MAX_RECORD_LEN];
+    char buffer[MAX_RECORD_LEN] = { 0 };
     fTemp = fopen(replaceFile, "w");
     fp = fopen(withFile, "r");
     int count = 0;
@@ -113,7 +113,7 @@ int changeRow(char *replaceFile, char *withFile, char *rowToReplace, char *newRo
         {
             fputs(buffer, fTemp);
         }
-        memset(buffer, '\0', strlen(buffer));
+        memset(buffer, 0, strlen(buffer));
         fileP = fgets(buffer, MAX_RECORD_LEN, fp);
     }
 
@@ -126,9 +126,9 @@ int changeRow(char *replaceFile, char *withFile, char *rowToReplace, char *newRo
     {
         remove(withFile);
         rename(replaceFile, withFile);
-        return 1;
+        return true;
     }
 
     printf("%s , ", strerror(errno));
-    return 0;
+    return false;
 }

@@ -12,8 +12,34 @@ void free2DArrFromMemory(char **array, int size)
     free(array);
 }
 
-void freeStrings(bugReport *report) {
+void freeStrings(bugReport *report)
+{
     free(report->sShortDesc);
     free(report->sDesc);
-    free(report->lastWriteInReport);
+    free(report->sTester);
+    free(report->sProgrammer);
+}
+
+void freeArrayOfStructs(int rowsInFile, bugReport *arrayOfStructs)
+{
+    for (int i = 0; i < rowsInFile; i++)
+    {
+        freeStrings(arrayOfStructs + i);
+    }
+    free(arrayOfStructs);
+}
+
+void freeStringsFromLoginStructure(LoginDetails *details)
+{
+    free(details->user);
+    free(details->pass);
+}
+
+void freeArrayOfLoginStructs(int rowsInFile, LoginDetails *arrayOfStructs)
+{
+    for (int i = 0; i < rowsInFile; i++)
+    {
+        freeStringsFromLoginStructure(arrayOfStructs + i);
+    }
+    free(arrayOfStructs);
 }

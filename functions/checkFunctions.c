@@ -21,9 +21,9 @@ int isContinue()
     fflush(stdin);
     if (contin == 'y' || contin == 'Y')
     {
-        return 1;
+        return true;
     }
-    return 0;
+    return false;
 }
 
 int countDigits(int num)

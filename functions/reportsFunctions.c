@@ -9,30 +9,37 @@ void createNewReport()
     createFileIfNotExist(DATABASE_FILE);
 
     clearScreen();
-    printCover('T');
-    printNewLines(1);
-    newReport.sShortDesc = calloc(SHORT_DESC_LENGTH, sizeof(char));
+    printCover(TESTER);
+    printNewLines(oneLine);
+    newReport.sShortDesc = (string)calloc(SHORT_DESC_LENGTH, sizeof(char));
     printf(" --- Enter text for short description. REPORT ID#%d ", countFileRows(DATABASE_FILE) + 1);
     getSentence(newReport.sShortDesc, 4, SHORT_DESC_LENGTH);
-    printNewLines(1);
+    printNewLines(oneLine);
     if (strlen(newReport.sShortDesc) < 4 || strlen(newReport.sShortDesc) > SHORT_DESC_LENGTH)
     {
+        free(newReport.sShortDesc);
         printf(" --- Log in as tester and try again! ---");
         return;
     }
-    newReport.sDesc = calloc(DESC_LENGTH, sizeof(char));
-    printNewLines(1);
+    newReport.sDesc = (string)calloc(DESC_LENGTH, sizeof(char));
+    printNewLines(oneLine);
     printf(" --- Enter text for description. --- ");
     getSentence(newReport.sDesc, 10, DESC_LENGTH);
-    printNewLines(1);
+    printNewLines(oneLine);
     if (strlen(newReport.sDesc) < 10 || strlen(newReport.sDesc) > DESC_LENGTH)
     {
+        free(newReport.sShortDesc);
+        free(newReport.sDesc);
         printf(" --- Log in as tester and try again! ---");
         return;
     }
 
-    newReport.lastWriteInReport = (char *)malloc(WRITER_LENGTH);
-    strcpy(newReport.lastWriteInReport, "TESTER");
+    newReport.sTester = (string)malloc(WRITER_LENGTH);
+    strcpy(newReport.sTester, regInstance.user);
+    // strcat(newReport.sTester, "someTestHere");
+
+    newReport.sProgrammer = (string)malloc(WRITER_LENGTH);
+    strcpy(newReport.sProgrammer, "UNDEFINED");
 
     newReport.uniqueID = countFileRows(DATABASE_FILE) + 1;
     newReport.sDateOfCreation = time(NULL);
@@ -42,7 +49,7 @@ void createNewReport()
 
     char *arrayPutInFile = (char *)malloc(MAX_RECORD_LEN);
     fp = fopen(DATABASE_FILE, "a+");
-    sprintf(arrayPutInFile, "%d,%s,%s,%d,%d,%d,%s,%d", newReport.uniqueID, newReport.sShortDesc, newReport.sDesc, newReport.sDateOfCreation, newReport.sDateOfFixed, newReport.sDateOfClosed, newReport.lastWriteInReport, newReport.statusOfReport);
+    sprintf(arrayPutInFile, "%d,%s,%s,%d,%d,%d,%s,%s,%d", newReport.uniqueID, newReport.sShortDesc, newReport.sDesc, newReport.sDateOfCreation, newReport.sDateOfFixed, newReport.sDateOfClosed, newReport.sTester, newReport.sProgrammer, newReport.statusOfReport);
     fprintf(fp, "%s\n", arrayPutInFile);
     fclose(fp);
 
@@ -50,32 +57,33 @@ void createNewReport()
     free(arrayPutInFile);
 }
 
-int isReportNew(int statusOfReport)
+int isReportNew(int statusOfReport) // да си направя ретърн за тру анд фолс
 {
     if (statusOfReport == NEW)
     {
-        return 1;
+        return true; // return true
     }
 
-    return 0;
+    return false; // return false
 }
 
 int isReportFixed(int statusOfReport)
 {
     if (statusOfReport == FIXED)
     {
-        return 1;
+        return true;
     }
-    return 0;
+    return false;
 }
 
 void putReportInStruct(char *buffer)
 {
-    char *dynBuffer = (char *)malloc(strlen(buffer) + 1);
+    char *dynBuffer = (string)malloc(strlen(buffer) + 1);
     strcpy(dynBuffer, buffer);
-    newReport.sShortDesc = (char *)malloc(SHORT_DESC_LENGTH);
-    newReport.sDesc = (char *)malloc(DESC_LENGTH);
-    newReport.lastWriteInReport = (char *)malloc(WRITER_LENGTH);
+    newReport.sShortDesc = (string)malloc(SHORT_DESC_LENGTH);
+    newReport.sDesc = (string)malloc(DESC_LENGTH);
+    newReport.sTester = (string)malloc(WRITER_LENGTH);
+    newReport.sProgrammer = (string)malloc(WRITER_LENGTH);
 
     int countStr = 0;
     char *token = strtok(dynBuffer, ",");
@@ -101,8 +109,11 @@ void putReportInStruct(char *buffer)
         case DATE_CLOSED_POS:
             newReport.sDateOfClosed = atoi(token);
             break;
-        case LAST_WRITER_POS:
-            strcpy(newReport.lastWriteInReport, token);
+        case TESTER_POS:
+            strcpy(newReport.sTester, token);
+            break;
+        case PROGRAMMER_POS:
+            strcpy(newReport.sProgrammer, token);
             break;
         case STATUS_REPORT_POS:
             newReport.statusOfReport = atoi(token);
@@ -120,7 +131,7 @@ void checkReport()
 
     createFileIfNotExist(DATABASE_FILE);
 
-    char getID[20] = {0};
+    char getID[MAX_ID_LENGTH] = {0}; // ID MAX LENGHT - MAGIC NUMBERS PROBLEM
 
     printf(" -- Enter id TO CHECK #: ");
     getStrFromAdress(getID);
@@ -142,7 +153,7 @@ void fixReport()
 {
     createFileIfNotExist(DATABASE_FILE);
 
-    char getID[20] = {0};
+    char getID[MAX_ID_LENGTH] = {0}; // MAGIC NUMBERS - PROBLEM
 
     printf(" -- Enter id TO FIX #: ");
     getStrFromAdress(getID);
@@ -166,7 +177,7 @@ void fixReport()
         return;
     }
     printf(" --- ID #%d is NEW. --- ", id);
-    printNewLines(1);
+    printNewLines(oneLine);
     printf(" -- Do you want to change Report #%d to FIXED? [y/n]: ", id);
 
     if (!isContinue())
@@ -179,17 +190,17 @@ void fixReport()
 
     newReport.sDateOfFixed = time(NULL);
     newReport.statusOfReport = FIXED;
-    strcpy(newReport.lastWriteInReport, "PROGRAMMER");
-    char newRow[MAX_RECORD_LEN];
+    strcpy(newReport.sProgrammer, regInstance.user);
+    char newRow[MAX_RECORD_LEN] = {0};
 
-    sprintf(newRow, "%d,%s,%s,%d,%d,%d,%s,%d\n", newReport.uniqueID, newReport.sShortDesc, newReport.sDesc, newReport.sDateOfCreation, newReport.sDateOfFixed, newReport.sDateOfClosed, newReport.lastWriteInReport, newReport.statusOfReport);
+    sprintf(newRow, "%d,%s,%s,%d,%d,%d,%s,%s,%d\n", newReport.uniqueID, newReport.sShortDesc, newReport.sDesc, newReport.sDateOfCreation, newReport.sDateOfFixed, newReport.sDateOfClosed, newReport.sTester, newReport.sProgrammer, newReport.statusOfReport);
     clearScreen();
-    printCover('P');
-    printNewLines(2);
+    printCover(PROGRAMMER);
+    printNewLines(twoLines);
     if (changeRow(REPLACE_FILE, DATABASE_FILE, currentRow, newRow))
     {
         printf(" --- YOU FIX THE REPORT (#BUG) --- ");
-        printNewLines(2);
+        printNewLines(twoLines);
         printParsedStruct(&newReport);
     }
     else if (!changeRow(REPLACE_FILE, DATABASE_FILE, currentRow, newRow))
@@ -205,7 +216,7 @@ void verifyReport()
 {
     createFileIfNotExist(DATABASE_FILE);
 
-    char getID[20] = {0};
+    char getID[MAX_ID_LENGTH] = {0}; // MAGIC NUMBERS - PROBLEN
 
     printf(" -- Enter id TO VERIFY #: ");
     getStrFromAdress(getID);
@@ -230,7 +241,7 @@ void verifyReport()
     }
 
     printf(" --- ID #%d is FIXED. --- ", id);
-    printNewLines(1);
+    printNewLines(oneLine);
     printf(" -- Do you want to change Report #%d to CLOSED? [y/n]: ", id);
 
     if (!isContinue())
@@ -242,17 +253,17 @@ void verifyReport()
     }
     newReport.sDateOfClosed = time(NULL);
     newReport.statusOfReport = CLOSED;
-    strcpy(newReport.lastWriteInReport, "TESTER");
+    strcpy(newReport.sTester, regInstance.user);
 
-    char newRow[MAX_RECORD_LEN];
-    sprintf(newRow, "%d,%s,%s,%d,%d,%d,%s,%d\n", newReport.uniqueID, newReport.sShortDesc, newReport.sDesc, newReport.sDateOfCreation, newReport.sDateOfFixed, newReport.sDateOfClosed, newReport.lastWriteInReport, newReport.statusOfReport);
+    char newRow[MAX_RECORD_LEN] = {0};
+    sprintf(newRow, "%d,%s,%s,%d,%d,%d,%s,%s,%d\n", newReport.uniqueID, newReport.sShortDesc, newReport.sDesc, newReport.sDateOfCreation, newReport.sDateOfFixed, newReport.sDateOfClosed, newReport.sTester, newReport.sProgrammer, newReport.statusOfReport);
     clearScreen();
-    printCover('P');
-    printNewLines(2);
+    printCover(PROGRAMMER);
+    printNewLines(twoLines);
     if (changeRow(REPLACE_FILE, DATABASE_FILE, currentRow, newRow))
     {
         printf(" --- YOU VERIFIED (CLOSED) THE REPORT (#BUG) --- ");
-        printNewLines(2);
+        printNewLines(twoLines);
         printParsedStruct(&newReport);
     }
     else if (!changeRow(REPLACE_FILE, DATABASE_FILE, currentRow, newRow))
@@ -263,33 +274,68 @@ void verifyReport()
     return;
 }
 
-void printReports(char flag, bugReport *report)
+void printReports(enPrintType flag)
 {
+    int rowsInFile = countFileRows(DATABASE_FILE);
+
+    bugReport *arrayOfStructs = (bugReport *)malloc(rowsInFile * sizeof(bugReport));
+
+    char *buffer = (string)calloc(MAX_RECORD_LEN, sizeof(char));
     fp = fopen(DATABASE_FILE, "r");
-    char buffer[MAX_RECORD_LEN] = {0};
-    char *fgetsFile = fgets(buffer, MAX_RECORD_LEN, fp);
-    while (fgetsFile != NULL)
+
+    for (int i = 0; i < rowsInFile; i++)
     {
+        fgets(buffer, MAX_RECORD_LEN, fp);
         putReportInStruct(buffer);
-        if (flag == 'a' || flag == 'A')
-        {
-            printParsedStruct(&newReport);
-        }
-        else if (report->statusOfReport == NEW && (flag == 'n' || flag == 'N'))
-        {
-            printParsedStruct(&newReport);
-        }
-        else if (report->statusOfReport == FIXED && (flag == 'f' || flag == 'F'))
-        {
-            printParsedStruct(&newReport);
-        }
-        else if (report->statusOfReport == CLOSED && (flag == 'c' || flag == 'C'))
-        {
-            printParsedStruct(&newReport);
-        }
-        memset(buffer, '\0', MAX_RECORD_LEN);
-        fgetsFile = fgets(buffer, MAX_RECORD_LEN, fp);
+        arrayOfStructs[i] = newReport;
     }
-    freeStrings(&newReport);
+
+    free(buffer);
     fclose(fp);
+    if (flag == REVERSED_TYPE)
+    {
+        for (int i = rowsInFile - 1; i >= 0; i--)
+        {
+            printParsedStruct(arrayOfStructs + i);
+        }
+    }
+    else if (flag == REGULAR_TYPE) // all rows
+    {
+        for (int i = 0; i < rowsInFile; i++)
+        {
+            printParsedStruct(arrayOfStructs + i);
+        }
+    }
+    else if (flag == NEW_TYPE)
+    {
+        for (int i = 0; i < rowsInFile; i++)
+        {
+            if (arrayOfStructs[i].statusOfReport == NEW)
+            {
+                printParsedStruct(arrayOfStructs + i);
+            }
+        }
+    }
+    else if (flag == FIXED_TYPE)
+    {
+        for (int i = 0; i < rowsInFile; i++)
+        {
+            if (arrayOfStructs[i].statusOfReport == FIXED)
+            {
+                printParsedStruct(arrayOfStructs + i);
+            }
+        }
+    }
+    else if (flag == CLOSED_TYPE)
+    {
+        for (int i = 0; i < rowsInFile; i++)
+        {
+            if (arrayOfStructs[i].statusOfReport == CLOSED)
+            {
+                printParsedStruct(arrayOfStructs + i);
+            }
+        }
+    }
+
+    freeArrayOfStructs(rowsInFile, arrayOfStructs);
 }

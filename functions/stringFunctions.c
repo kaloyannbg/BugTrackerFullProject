@@ -2,12 +2,20 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include <ctype.h>
 #include "../main.h"
 
 void getStrFromAdress(char *str)
 {
     scanf("%s", str);
     fflush(stdin);
+}
+
+char stringUpperToLower(char *arr) {
+    while(*(arr) != '\0') {
+       *(arr) = tolower(*(arr));
+       *(arr++);
+    }
 }
 
 char changeCharInArr(char *inputArr, char cChar, char toChar)
@@ -24,7 +32,7 @@ char changeCharInArr(char *inputArr, char cChar, char toChar)
 void getSentence(char *inputArr, int minLimit, int maxLimit)
 {
     printf(" -- Min limit: %d -- Max limit of chars: %d. -- ", minLimit, maxLimit);
-    printNewLines(1);
+    printNewLines(oneLine);
     printf(" -- Press ENTER for save. -- ");
     minLimit = abs(minLimit);
     maxLimit = abs(maxLimit);
@@ -32,7 +40,7 @@ void getSentence(char *inputArr, int minLimit, int maxLimit)
     char c = 0, d = 0;
     int countChars = 0;
 
-    printNewLines(1);
+    printNewLines(oneLine);
     printf(" -- Your text: ");
 
     while (c != '\n')
@@ -86,19 +94,19 @@ void getSentence(char *inputArr, int minLimit, int maxLimit)
 
     if (countChars < minLimit)
     {
-        memset(inputArr, '\0', countChars);
-        printNewLines(1);
+        memset(inputArr, 0, countChars); //MEMSET DA OPRAVQ
+        printNewLines(oneLine);
         printf("  -- Sorry but you are under limit. Min limit is: %d chars -- ", minLimit);
     }
     else if (countChars > maxLimit)
     {
-        memset(inputArr, '\0', countChars);
-        printNewLines(1);
+        memset(inputArr, 0, countChars);
+        printNewLines(oneLine);
         printf("  - Sorry but you are out of limit. Max limit is: %d chars -- ", maxLimit);
     }
     else if (countChars > minLimit && countChars < maxLimit)
     {
-        printNewLines(1);
+        printNewLines(oneLine);
         printf("  - Congratz! -- ");
     }
 }
@@ -122,7 +130,7 @@ void printDateFromTimestamp(time_t timestamp)
 {
     time_t t = timestamp;
     struct tm tm = *localtime(&t);
-    printf("%02d-%02d-%02d %02d:%02d:%d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+    printf("%02d-%02d-%02d %02d:%02d:%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 }
 
 void printParsedStruct(bugReport *report)
@@ -152,7 +160,9 @@ void printParsedStruct(bugReport *report)
         printDateFromTimestamp(report->sDateOfClosed);
     }
     printf(" | ");
-    printf("%s", report->lastWriteInReport);
+    printf("TESTER: %s", report->sTester);
+    printf(" | ");
+    printf("PROGRAMMER: %s", report->sProgrammer);
     printf(" | ");
     if (report->statusOfReport == NEW)
     {
@@ -168,4 +178,43 @@ void printParsedStruct(bugReport *report)
     }
     printf(" | ");
     putchar('\n');
+}
+
+int isUsernameValid(char *username)
+{
+
+    if (strlen(username) <= 3 || strlen(username) >= 21)
+    {
+        return -1;
+    }
+
+    while (*username != '\0')
+    {
+        if (!isLetter(*(username)))
+        {
+            return 0;
+        }
+
+        *(username++);
+
+    }
+    return 1;
+}
+
+int isPasswordValid(char *password)
+{
+    if (strlen(password) <= 4 || strlen(password) >= 21)
+    {
+        return -1;
+    }
+
+    while (*password != '\0')
+    {
+        if (!isDigit(*(password)))
+        {
+            return 0;
+        }
+        *(password++);
+    }
+    return 1;
 }

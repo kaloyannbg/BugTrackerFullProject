@@ -6,30 +6,32 @@
 void printLoginChoice()
 {
     printf(" -- Enter 1 for log in as programmer! --");
-    printNewLines(1);
+    printNewLines(oneLine);
     printf(" -- Enter 2 for log in as tester! --");
-    printNewLines(2);
+    printNewLines(oneLine);
+    printf(" -- Enter 3 for new registration! --");
+    printNewLines(twoLines);
 }
 
-void printLoggedAs(char flag)
+void printLoggedAs(enUserType flag)
 {
-    if (flag == 'p' || flag == 'P')
+    if (flag == PROGRAMMER)
     {
         printf(" *          You are logged as PROGRAMMER          *");
     }
-    else if (flag == 't' || flag == 'T')
+    else if (flag == TESTER)
     {
         printf(" *            You are logged as TESTER            *");
     }
 }
 
-void printLoginContinue(char flag)
+void printLoginContinue(enUserType flag)
 {
-    if (flag == 'p' || flag == 'P')
+    if (flag == PROGRAMMER)
     {
         printf(" ---- Do you want to stay logged as: PROGRAMMER ? [y/n]: ");
     }
-    else if (flag == 't' || flag == 'T')
+    else if (flag == TESTER)
     {
         printf(" ---- Do you want to stay logged as: TESTER ? [y/n]: ");
     }

@@ -3,90 +3,109 @@
 #include <stdlib.h>
 #include <conio.h>
 #include "main.h"
-//#define DATABASE_FILE "DB.csv"
 
 int main(void)
 {
     system("color 0B");
-    char cLoginChoice = 0, cMenuChoice = 0, cChar = 0; // [cLoginChoice 1 = programmer, 2 = tester]
-    int isCont = 0;
+    char cMenuChoice = 0, cChar = 0;
+    int iLoginChoice = 0, isCont = 0, isLog = -1; // [iLoginChoice 1 = programmer, 2 = tester]
     do
     {
         clearScreen();
-        printCover('N');
+        printCover(GUEST);
         printLoginChoice();
         countFileRows(DATABASE_FILE);
         printf(" -- Please, enter your choice: ");
-        getCharFromAdress(&cLoginChoice);
-        cChar = 0, isCont = 0;
-        switch (cLoginChoice)
+        scanf("%d", &iLoginChoice);
+        cChar = 0, isCont = 0, isLog = 0;
+        clearScreen();
+        printCover(GUEST);
+        switch (iLoginChoice)
         {
-        case '0':
-            clearScreen();
-            printCover('N');
+        case PRIMARY_MENU_EXIT:
             printf(" -- Bye, bye! --");
             exit(0);
             break;
-        case '1':
+        case PRIMARY_MENU_PROGRAMMER:
+            doLogIn(&regInstance, &loginInstance, PROGRAMMER, &isLog);
+
+            if (isLog != 1)
+            {
+                break;
+            }
             do
             {
                 clearScreen();
-                printCover('P');
-                printNewLines(2);
+                printCover(PROGRAMMER);
+                printNewLines(twoLines);
                 printProgrammerMenu();
-                printNewLines(2);
+                printNewLines(twoLines);
                 printf(" -- Please, enter your choice as PROGRAMMER: ");
                 getCharFromAdress(&cMenuChoice);
-                printNewLines(1);
+                printNewLines(oneLine);
                 itemsFromProgrammerMenu(cMenuChoice);
-                printNewLines(1);
-                printLoginContinue('P');
+                printNewLines(oneLine);
+                printLoginContinue(PROGRAMMER);
                 getCharFromAdress(&cChar);
                 isCont = isSessionContinue(&cChar);
                 while (isCont == -1)
                 {
                     clearScreen();
-                    printCover('P');
-                    printLoginContinue('P');
+                    printCover(PROGRAMMER);
+                    printLoginContinue(TESTER);
                     getCharFromAdress(&cChar);
                     isCont = isSessionContinue(&cChar);
                 }
+
             } while (isCont != 0);
 
             break;
-        case '2':
+        case PRIMARY_MENU_TESTER:
+            doLogIn(&regInstance, &loginInstance, TESTER, &isLog);
+
+            if (isLog != 1)
+            {
+                break;
+            }
             do
             {
                 clearScreen();
-                printCover('T');
-                printNewLines(2);
+                printCover(TESTER);
+                printNewLines(twoLines);
                 printTesterMenu();
-                printNewLines(2);
+                printNewLines(twoLines);
                 printf(" -- Please, enter your choice as TESTER: ");
                 getCharFromAdress(&cMenuChoice);
-                printNewLines(1);
+                printNewLines(oneLine);
                 itemsFromTesterMenu(cMenuChoice);
-                printNewLines(1);
-                printLoginContinue('T');
+                printNewLines(oneLine);
+                printLoginContinue(TESTER);
                 getCharFromAdress(&cChar);
                 isCont = isSessionContinue(&cChar);
                 while (isCont == -1)
                 {
                     clearScreen();
-                    printCover('T');
-                    printLoginContinue('T');
+                    printCover(TESTER);
+                    printLoginContinue(TESTER);
                     getCharFromAdress(&cChar);
                     isCont = isSessionContinue(&cChar);
                 }
             } while (isCont != 0);
+            break;
+        case 3:
+            printNewLines(twoLines);
+            getLoginDetailsFunc(&regInstance);
+            printNewLines(twoLines);
             break;
         default:
             printf(" -- Invalid choice. Please try again! -- ");
             break;
         }
 
-        printNewLines(2);
-    } while (cLoginChoice != '0');
+        printNewLines(twoLines);
+    } while (iLoginChoice != PRIMARY_MENU_EXIT);
+
+    freeStringsFromLoginStructure(&regInstance);
 
     return 0;
 }

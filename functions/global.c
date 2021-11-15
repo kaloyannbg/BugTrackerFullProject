@@ -15,6 +15,7 @@ void getInt(int *var)
 
 void getCharFromAdress(char *c)
 {
+    fflush(stdin);
     scanf("%c", c);
     fflush(stdin);
 }
