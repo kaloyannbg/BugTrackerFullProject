@@ -3,20 +3,18 @@
 #include "headers/defineFile.h"
 #include "headers/structFile.h"
 
-
-FILE *fp;
+FILE *fp; // ЗАЩО НЕ ТРЯБВА ДА Е NULL, КОДА ГЪРМИ
 FILE *fTemp;
 
 // CONSTANTS
-//
 void printLoginChoice();
-void printCover(char flag);
+void printCover(enUserType flag);
 void printTesterMenu();
 void printProgrammerMenu();
-void printLoggedAs(char flag);
-void printReports(char flag, bugReport *report);
+void printLoggedAs(enUserType flag); // да се поправи на енъм
+void printReports(enPrintType flag); // да се поправи на енъм
 void printParsedStruct(bugReport *report);
-void printLoginContinue(char flag); // p or P for programmer, t or T for tester
+void printLoginContinue(enUserType flag); // p or P for programmer, t or T for tester // да се поправи на енъм
 
 // START [FUNCTIONS GLOBAL.C]
 char charToInt(char c);
@@ -48,6 +46,9 @@ void fixReport();
 // START [FUNCTIONS/memoryFunctions.c]
 void free2DArrFromMemory(char **array, int size);
 void freeStrings(bugReport *report);
+void freeArrayOfStructs(int rowsInFile, bugReport *arrayOfStructs);
+void freeArrayOfLoginStructs(int rowsInFile, LoginDetails *arrayOfStructs);
+void freeStringsFromLoginStructure(LoginDetails *details);
 // END [FUNCTIONS/memoryFunctions.c]
 
 // START [FUNCTIONS/fileFunctions.c]
@@ -63,12 +64,13 @@ int changeRow(char *replaceFile, char *withFile, char *rowToReplace, char *newRo
 char changeCharInArr(char *inputArr, char cChar, char toChar);
 void getSentence(char *inputArr, int minLimit, int maxLimit);
 void getStrFromAdress(char *str);
+char stringUpperToLower(char *arr);
 // END [FUNCTIONS/stringFunctions.c]
-
-// START [FUNCTIONS/timeFunctions.c]
-char getCurrentTime(char *out); // save current time in 'out' array
-// END [FUNCTIONS/timeFunctions.c]
 
 // START [FUNCTIONS/login.c]
 int isSessionContinue(char *charAdress);
+void getLoginDetailsFunc(LoginDetails *regInstance);
+int isUsernameValid(char *username);
+int isPasswordValid(char *password);
+void doLogIn(LoginDetails *regInstance, LoginDetails *loginInstance, enUserType flag, int *isLogAdress); // flag 1 programmer, flag 2 tester
 // END [FUNCTIONS/login.c]

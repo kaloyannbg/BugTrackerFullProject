@@ -7,14 +7,14 @@ int isSessionContinue(char *charAdress)
 {
     if (*charAdress == 'y' || *charAdress == 'Y')
     {
-        return 1;
+        return true;
     }
     else if (*charAdress == 'n' || *charAdress == 'N')
     {
-        return 0;
+        return false;
     }
 
-    return -1;
+    return undefine;
 }
 
 void putDetailsInStruct(char *buffer)
@@ -70,7 +70,7 @@ void makeRegistration(LoginDetails *regInstance, LoginDetails *loginInstance)
     }
 
     LoginDetails *arrayOfUsers = (LoginDetails *)malloc(fileRows * sizeof(LoginDetails));
-    char buffer[MAX_USERNAME_AND_PASS_LENGTH] = { 0 };
+    char buffer[MAX_USERNAME_AND_PASS_LENGTH] = {0};
     fp = fopen(DATABASE_WITH_USERS, "r");
     for (int i = 0; i < fileRows; i++)
     {
@@ -91,7 +91,7 @@ void makeRegistration(LoginDetails *regInstance, LoginDetails *loginInstance)
         }
     }
 
-    fopen(DATABASE_WITH_USERS, "a+");
+    fp = fopen(DATABASE_WITH_USERS, "a+");
     char *putInFileArr = (string)calloc(MAX_USERNAME_AND_PASS_LENGTH, sizeof(char));
     stringUpperToLower(regInstance->user);
     sprintf(putInFileArr, "%s,%s,%d", regInstance->user, regInstance->pass, regInstance->userType);
@@ -204,10 +204,11 @@ void doLogIn(LoginDetails *regInstance, LoginDetails *loginInstance, enUserType 
     {
         if ((strcmp(arrayOfUsers[i].user, regInstance->user) == 0) && (strcmp(arrayOfUsers[i].pass, regInstance->pass) == 0) && (arrayOfUsers[i].userType == flag)) //  && strcmp(arrayOfUsers[i].pass, regInstance->pass) == 0 && arrayOfUsers[i] .userType == flag
         {
-            printf(" -- Hello, %s. --", arrayOfUsers[i].user);
+            printf(" -- Hello, %s. --", regInstance->user);
             printNewLines(oneLine);
-            free(buffer);
             *isLogAdress = 1;
+            freeArrayOfLoginStructs(fileRows, arrayOfUsers);
+            free(buffer);
             makePause();
             return;
         }
@@ -216,7 +217,7 @@ void doLogIn(LoginDetails *regInstance, LoginDetails *loginInstance, enUserType 
     printf(" -- Wrong username, password or user type -- ");
     printNewLines(oneLine);
     *isLogAdress = 0;
-    makePause();
     freeArrayOfLoginStructs(fileRows, arrayOfUsers);
     free(buffer);
+    makePause();
 }

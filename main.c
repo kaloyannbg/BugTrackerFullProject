@@ -29,7 +29,7 @@ int main(void)
         case PRIMARY_MENU_PROGRAMMER:
             doLogIn(&regInstance, &loginInstance, PROGRAMMER, &isLog);
 
-            if (isLog != 1)
+            if (isLog != true)
             {
                 break;
             }
@@ -48,7 +48,7 @@ int main(void)
                 printLoginContinue(PROGRAMMER);
                 getCharFromAdress(&cChar);
                 isCont = isSessionContinue(&cChar);
-                while (isCont == -1)
+                while (isCont == undefine)
                 {
                     clearScreen();
                     printCover(PROGRAMMER);
@@ -57,13 +57,13 @@ int main(void)
                     isCont = isSessionContinue(&cChar);
                 }
 
-            } while (isCont != 0);
+            } while (isCont != false);  //if return false user is quit from his profile.
 
             break;
         case PRIMARY_MENU_TESTER:
             doLogIn(&regInstance, &loginInstance, TESTER, &isLog);
 
-            if (isLog != 1)
+            if (isLog != true)
             {
                 break;
             }
@@ -82,7 +82,7 @@ int main(void)
                 printLoginContinue(TESTER);
                 getCharFromAdress(&cChar);
                 isCont = isSessionContinue(&cChar);
-                while (isCont == -1)
+                while (isCont == undefine)
                 {
                     clearScreen();
                     printCover(TESTER);
@@ -90,7 +90,7 @@ int main(void)
                     getCharFromAdress(&cChar);
                     isCont = isSessionContinue(&cChar);
                 }
-            } while (isCont != 0);
+            } while (isCont != false); //if return false user is quit from his profile.
             break;
         case 3:
             printNewLines(twoLines);

@@ -27,13 +27,13 @@ void printCover(enUserType flag)
     {
         printLoggedAs(PROGRAMMER);
         printNewLines(oneLine);
-        printf(" *\t    Your nickname: %s                 *", regInstance.user);
+        printf("  \t    Your nickname: %s", regInstance.user);
     }
     else if (flag == TESTER)
     {
         printLoggedAs(TESTER);
         printNewLines(oneLine);
-        printf(" *\t    Your nickname: %s                 *", regInstance.user);
+        printf("  \t    Your nickname: %s", regInstance.user);
     }
     else if(flag == GUEST)
     {

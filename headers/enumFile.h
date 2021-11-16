@@ -43,8 +43,9 @@ enum loginDetailsStructPos
 
 enum eBoolean
 {
+    undefine = -1,
     false,
-    true
+    true,
 };
 
 enum ePrintType

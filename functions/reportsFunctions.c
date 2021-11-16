@@ -13,9 +13,9 @@ void createNewReport()
     printNewLines(oneLine);
     newReport.sShortDesc = (string)calloc(SHORT_DESC_LENGTH, sizeof(char));
     printf(" --- Enter text for short description. REPORT ID#%d ", countFileRows(DATABASE_FILE) + 1);
-    getSentence(newReport.sShortDesc, 4, SHORT_DESC_LENGTH);
+    getSentence(newReport.sShortDesc, MIN_SHORT_DESC_LENGTH, SHORT_DESC_LENGTH);
     printNewLines(oneLine);
-    if (strlen(newReport.sShortDesc) < 4 || strlen(newReport.sShortDesc) > SHORT_DESC_LENGTH)
+    if (strlen(newReport.sShortDesc) < MIN_SHORT_DESC_LENGTH || strlen(newReport.sShortDesc) > SHORT_DESC_LENGTH)
     {
         free(newReport.sShortDesc);
         printf(" --- Log in as tester and try again! ---");
@@ -24,9 +24,9 @@ void createNewReport()
     newReport.sDesc = (string)calloc(DESC_LENGTH, sizeof(char));
     printNewLines(oneLine);
     printf(" --- Enter text for description. --- ");
-    getSentence(newReport.sDesc, 10, DESC_LENGTH);
+    getSentence(newReport.sDesc, MIN_DESC_LENGTH, DESC_LENGTH);
     printNewLines(oneLine);
-    if (strlen(newReport.sDesc) < 10 || strlen(newReport.sDesc) > DESC_LENGTH)
+    if (strlen(newReport.sDesc) < MIN_DESC_LENGTH || strlen(newReport.sDesc) > DESC_LENGTH)
     {
         free(newReport.sShortDesc);
         free(newReport.sDesc);
@@ -39,7 +39,7 @@ void createNewReport()
     // strcat(newReport.sTester, "someTestHere");
 
     newReport.sProgrammer = (string)malloc(WRITER_LENGTH);
-    strcpy(newReport.sProgrammer, "UNDEFINED");
+    strcpy(newReport.sProgrammer, UNDEFINED_NAME);
 
     newReport.uniqueID = countFileRows(DATABASE_FILE) + 1;
     newReport.sDateOfCreation = time(NULL);
@@ -131,7 +131,7 @@ void checkReport()
 
     createFileIfNotExist(DATABASE_FILE);
 
-    char getID[MAX_ID_LENGTH] = {0}; // ID MAX LENGHT - MAGIC NUMBERS PROBLEM
+    char getID[MAX_ID_LENGTH] = {0};
 
     printf(" -- Enter id TO CHECK #: ");
     getStrFromAdress(getID);
@@ -153,7 +153,7 @@ void fixReport()
 {
     createFileIfNotExist(DATABASE_FILE);
 
-    char getID[MAX_ID_LENGTH] = {0}; // MAGIC NUMBERS - PROBLEM
+    char getID[MAX_ID_LENGTH] = {0};
 
     printf(" -- Enter id TO FIX #: ");
     getStrFromAdress(getID);
@@ -216,7 +216,7 @@ void verifyReport()
 {
     createFileIfNotExist(DATABASE_FILE);
 
-    char getID[MAX_ID_LENGTH] = {0}; // MAGIC NUMBERS - PROBLEN
+    char getID[MAX_ID_LENGTH] = {0};
 
     printf(" -- Enter id TO VERIFY #: ");
     getStrFromAdress(getID);
