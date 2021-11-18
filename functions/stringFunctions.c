@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <ctype.h>
+#include <conio.h>
 #include "../main.h"
 
 void getStrFromAdress(char *str)
@@ -11,10 +12,12 @@ void getStrFromAdress(char *str)
     fflush(stdin);
 }
 
-char stringUpperToLower(char *arr) {
-    while(*(arr) != '\0') {
-       *(arr) = tolower(*(arr));
-       *(arr++);
+char stringUpperToLower(char *arr)
+{
+    while (*(arr) != '\0')
+    {
+        *(arr) = tolower(*(arr));
+        *(arr++);
     }
 }
 
@@ -94,7 +97,7 @@ void getSentence(char *inputArr, int minLimit, int maxLimit)
 
     if (countChars < minLimit)
     {
-        memset(inputArr, 0, countChars); //MEMSET DA OPRAVQ
+        memset(inputArr, 0, countChars); // MEMSET DA OPRAVQ
         printNewLines(oneLine);
         printf("  -- Sorry but you are under limit. Min limit is: %d chars -- ", minLimit);
     }
@@ -129,8 +132,8 @@ void printParsedArr(char *arr, int size)
 void printDateFromTimestamp(time_t timestamp)
 {
     time_t t = timestamp;
-    struct tm tm = *localtime(&t);
-    printf("%02d-%02d-%02d %02d:%02d:%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+    struct tm *tm = localtime(&t);
+    printf("%02d-%02d-%02d %02d:%02d:%02d", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
 }
 
 void printParsedStruct(bugReport *report)
@@ -196,7 +199,6 @@ int isUsernameValid(char *username)
         }
 
         *(username++);
-
     }
     return 1;
 }
@@ -217,4 +219,53 @@ int isPasswordValid(char *password)
         *(password++);
     }
     return 1;
+}
+
+void parsePasswordToStars(string buffer, int currentSize)
+{
+    for (int i = 0; i < currentSize; i++)
+    {
+        putchar('*');
+    }
+}
+
+void getPassword(string buffer, int maxSize)
+{
+    char c = 0;
+    int cCounter = 0;
+    memset(buffer, 0, strlen(buffer));
+    while (c != '\n')
+    {
+        clearScreen();
+        printCover(GUEST);
+        printf(" -- Username: %s", regInstance.user);
+        printNewLines(oneLine);
+        printf(" -- Password: ");
+        parsePasswordToStars(buffer, strlen(buffer));
+        c = getch();
+        if (c == '\b')
+        {
+            if (cCounter >= true)
+            {
+                buffer[--cCounter] = '\0';
+            }
+        }
+        else if (cCounter == MAX_PASSWORD_LENGTH)
+        {
+            printNewLines(oneLine);
+            printf(" -- You are on max password length: %d!", MAX_PASSWORD_LENGTH);
+            printNewLines(oneLine);
+            makePause();
+        }
+
+        else if (c != '\r')
+        {
+            buffer[cCounter++] = c;
+        }
+        else if (c == '\r')
+        {
+            buffer[cCounter] = '\0';
+            return;
+        }
+    }
 }

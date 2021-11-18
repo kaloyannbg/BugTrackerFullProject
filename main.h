@@ -65,6 +65,7 @@ char changeCharInArr(char *inputArr, char cChar, char toChar);
 void getSentence(char *inputArr, int minLimit, int maxLimit);
 void getStrFromAdress(char *str);
 char stringUpperToLower(char *arr);
+void getPassword(string buffer, int maxSize);
 // END [FUNCTIONS/stringFunctions.c]
 
 // START [FUNCTIONS/login.c]

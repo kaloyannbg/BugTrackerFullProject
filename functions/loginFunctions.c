@@ -136,7 +136,8 @@ void getLoginDetailsFunc(LoginDetails *regInstance)
     regInstance->user = (string)malloc(strlen(buffer) + 1);
     strcpy(regInstance->user, buffer);
     printf(" -- Please enter your password: ");
-    getStrFromAdress(buffer);
+    getPassword(buffer, MAX_PASSWORD_LENGTH);
+    printNewLines(oneLine);
     if (isPasswordValid(buffer) == 0)
     {
         printf(" -- Your password can have only digits! -- ");
@@ -175,7 +176,8 @@ void doLogIn(LoginDetails *regInstance, LoginDetails *loginInstance, enUserType 
     regInstance->user = (string)malloc(strlen(buffer) + 1);
     strcpy(regInstance->user, buffer);
     printf(" -- Password: ");
-    getStrFromAdress(buffer);
+    getPassword(buffer, MAX_USERNAME_AND_PASS_LENGTH);
+    printNewLines(oneLine);
     regInstance->pass = (string)malloc(strlen(buffer) + 1);
     strcpy(regInstance->pass, buffer);
     int fileRows = countFileRows(DATABASE_WITH_USERS);
