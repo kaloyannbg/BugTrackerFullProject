@@ -176,7 +176,7 @@ void doLogIn(LoginDetails *regInstance, LoginDetails *loginInstance, enUserType 
     regInstance->user = (string)malloc(strlen(buffer) + 1);
     strcpy(regInstance->user, buffer);
     printf(" -- Password: ");
-    getPassword(buffer, MAX_USERNAME_AND_PASS_LENGTH);
+    getPassword(buffer, MAX_PASSWORD_LENGTH);
     printNewLines(oneLine);
     regInstance->pass = (string)malloc(strlen(buffer) + 1);
     strcpy(regInstance->pass, buffer);

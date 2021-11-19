@@ -1,3 +1,6 @@
+#ifndef structFile
+#define structFile
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -33,3 +36,5 @@ typedef struct
 
 LoginDetails loginInstance; // with extern in c file където ще го ползвам да инклудна хедъра , тук ще е екстърн
 LoginDetails regInstance; // with extern in c file където ще го ползвам да инклудна хедъра , тук ще е екстърн
+
+#endif // !structFile

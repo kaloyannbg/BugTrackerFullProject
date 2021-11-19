@@ -1,3 +1,6 @@
+#ifndef enumFile
+#define enumFile
+
 enum ePrimaryMenu {
     PRIMARY_MENU_EXIT,
     PRIMARY_MENU_PROGRAMMER,
@@ -64,3 +67,5 @@ enum ePrintLines {
     threeLines,
     fourLines
 };
+
+#endif // !enumFile

@@ -1,3 +1,6 @@
+#ifndef defineFile
+#define defineFile
+
 #define SHORT_DESC_LENGTH 128
 #define DESC_LENGTH 1024
 #define DATE_LENGTH 128
@@ -15,3 +18,5 @@
 #define MIN_SHORT_DESC_LENGTH 4
 #define MIN_DESC_LENGTH 8
 #define UNDEFINED_NAME "UNDEFINED"
+
+#endif // !defineFile

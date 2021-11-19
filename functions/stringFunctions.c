@@ -250,10 +250,10 @@ void getPassword(string buffer, int maxSize)
                 buffer[--cCounter] = '\0';
             }
         }
-        else if (cCounter == MAX_PASSWORD_LENGTH)
+        else if (cCounter == maxSize)
         {
             printNewLines(oneLine);
-            printf(" -- You are on max password length: %d!", MAX_PASSWORD_LENGTH);
+            printf(" -- You are on max password length: %d!", maxSize);
             printNewLines(oneLine);
             makePause();
         }

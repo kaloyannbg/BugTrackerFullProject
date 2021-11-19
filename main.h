@@ -1,9 +1,11 @@
+#ifndef MAIN_PROTOTYPES
+#define MAIN_PROTOTYPES
 #include <stdio.h>
 #include <stdlib.h>
 #include "headers/defineFile.h"
 #include "headers/structFile.h"
 
-FILE *fp; // ЗАЩО НЕ ТРЯБВА ДА Е NULL, КОДА ГЪРМИ
+FILE *fp;
 FILE *fTemp;
 
 // CONSTANTS
@@ -11,8 +13,8 @@ void printLoginChoice();
 void printCover(enUserType flag);
 void printTesterMenu();
 void printProgrammerMenu();
-void printLoggedAs(enUserType flag); // да се поправи на енъм
-void printReports(enPrintType flag); // да се поправи на енъм
+void printLoggedAs(enUserType flag);
+void printReports(enPrintType flag);
 void printParsedStruct(bugReport *report);
 void printLoginContinue(enUserType flag); // p or P for programmer, t or T for tester // да се поправи на енъм
 
@@ -75,3 +77,4 @@ int isUsernameValid(char *username);
 int isPasswordValid(char *password);
 void doLogIn(LoginDetails *regInstance, LoginDetails *loginInstance, enUserType flag, int *isLogAdress); // flag 1 programmer, flag 2 tester
 // END [FUNCTIONS/login.c]
+#endif // !MAIN_PROTOTYPES
